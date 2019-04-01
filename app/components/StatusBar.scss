@@ -1,0 +1,10 @@
+.statusBar {
+  grid-row: 3;
+  border-right: 1px white solid;
+  border-bottom: 1px white solid;
+  border-left: 1px white solid;
+  padding: 2px 3px 2px 3px;
+  height: 13px;
+  overflow: hidden;
+  text-overflow: clip;
+}

@@ -1,0 +1,12 @@
+.logview {
+  grid-row: 2;
+  border: 1px white solid;
+  font-size: 12px;
+  padding: 5px;
+  overflow-y: scroll;
+}
+
+.logview > ul {
+  margin: 0;
+  padding: 0;
+}

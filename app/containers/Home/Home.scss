@@ -1,0 +1,20 @@
+$logViewHeight: 140px;
+$statusBarHeight: 18px;
+
+.container {
+  display: grid;
+  height: 100vh;
+  grid-template-rows: 1fr $logViewHeight $statusBarHeight;
+}
+
+.mainPanel {
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  height: calc(100vh - #{$logViewHeight} - #{$statusBarHeight});
+  position: relative;
+}
+
+.mainPanel h3 {
+  margin: 0 0 10px 0;
+}

@@ -1,0 +1,159 @@
+.dialogOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.dialogContentLeft {
+  position: absolute;
+  top: 40px;
+  left: 20px;
+  width: calc(100% / 2 - 80px);
+  border: 1px solid rgb(204, 204, 204);
+  background: black;
+  overflow: auto;
+
+  /* border-radius: 4px; */
+  outline: none;
+  padding: 10px;
+}
+
+.dialogContentRight {
+  position: absolute;
+  top: 40px;
+  right: 40px;
+  width: calc(100% / 2 - 80px);
+  border: 1px solid rgb(204, 204, 204);
+  background: black;
+  overflow: auto;
+
+  /* border-radius: 4px; */
+  outline: none;
+  padding: 10px;
+}
+
+.dialogContentWhole {
+  position: absolute;
+  top: 40px;
+  left: 20px;
+  width: calc(100% - 80px);
+  border: 1px solid rgb(204, 204, 204);
+  background: black;
+  overflow: auto;
+
+  /* border-radius: 4px; */
+  outline: none;
+  padding: 10px;
+}
+
+.dialogContentCenter {
+  position: absolute;
+  left: calc(50% - 50px);
+  top: calc(50% - 50px);
+  border: 1px solid rgb(204, 204, 204);
+  background: black;
+
+  /* border-radius: 4px; */
+  outline: none;
+  padding: 10px;
+}
+
+.textInput {
+  width: 100%;
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 12px;
+}
+
+.textInput:focus {
+  background-color: rgb(255, 255, 180);
+}
+
+.buttonsContainer {
+  display: table;
+  width: 100%;
+  margin-top: 15px;
+}
+
+.item {
+  display: table-cell;
+  text-align: center;
+}
+
+button {
+  background-color: black;
+  color: white;
+  width: 60px;
+  border: white solid 1px;
+}
+
+button:focus {
+  background-color: white;
+  color: black;
+  outline: 0 !important;
+}
+
+.detailsContainer {
+  display: inline-flex;
+  justify-content: flex-start;
+  width: 100%;
+  margin-top: 10px;
+  align-items: center;
+}
+
+.detailsContainer span.label {
+  white-space: nowrap;
+}
+
+.detailsContainer label input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.detailsContainer label input[type="checkbox"]:focus {
+  box-shadow: 0 0 0 3px aqua;
+}
+
+.ownerGroupContainer {
+  display: inline-flex;
+  justify-content: flex-start;
+  width: 100%;
+  margin-top: 10px;
+  align-items: center;
+}
+
+.form input[type="radio"]:focus {
+  box-shadow: 0 0 0 3px aqua;
+}
+
+input[type=date]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  display: none;
+}
+
+/*
+input[type=date]::-webkit-calendar-picker-indicator {
+  -webkit-appearance: none;
+  display: none;
+}
+*/
+
+input[type=date]::-webkit-clear-button {
+  -webkit-appearance: none;
+  display: none;
+}
+
+input[type=time]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  display: none;
+}
+
+input[type=time]::-webkit-clear-button {
+  -webkit-appearance: none;
+  display: none;
+}
+
+.radioInputContainer {
+  margin-left: 20px;
+}

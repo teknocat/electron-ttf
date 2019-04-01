@@ -1,0 +1,73 @@
+$fileExtWidth: 40px;
+$fileModeSizeWidth: 76px;
+$fileDateWidth: 116px;
+
+.items span {
+  flex-direction: row;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+li.marked {
+  background-color: blue;
+}
+
+span.type1FileBody {
+  width: 100%;
+}
+
+span.type1FileExt {
+  min-width: $fileExtWidth;
+  width: 20%;
+}
+
+span.type1FileMode {
+  min-width: $fileModeSizeWidth;
+  text-align: right;
+  margin-right: 3px;
+}
+
+span.type1FileDate {
+  min-width: $fileDateWidth;
+  text-align: right;
+}
+
+span.type2FileBody {
+  width: 100%;
+}
+
+span.type2FileExt {
+  min-width: $fileExtWidth;
+  width: 20%;
+}
+
+span.type2FileSize {
+  min-width: $fileModeSizeWidth;
+  margin-right: 3px;
+  text-align: right;
+}
+
+span.type2FileDate {
+  min-width: $fileDateWidth;
+  text-align: right;
+}
+
+span.type3FileBody {
+  width: 100%;
+}
+
+span.type3FileExt {
+  min-width: $fileExtWidth;
+  width: 20%;
+}
+
+span.type3FileOwner {
+  min-width: $fileModeSizeWidth;
+  margin-right: 3px;
+  text-align: right;
+}
+
+span.type3FileDate {
+  min-width: $fileDateWidth;
+  text-align: right;
+}
