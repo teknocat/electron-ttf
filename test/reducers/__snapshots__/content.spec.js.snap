@@ -1,0 +1,106 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`reducers content should handle MOVE_CURSOR_DOWN 1`] = `
+Object {
+  "actionState": "INIT",
+  "left": Object {
+    "position": 1,
+  },
+}
+`;
+
+exports[`reducers content should handle MOVE_CURSOR_UP 1`] = `
+Object {
+  "actionState": "INIT",
+  "left": Object {
+    "position": 0,
+  },
+}
+`;
+
+exports[`reducers content should handle SWITCH_ACTIVE_VIEW 1`] = `
+Object {
+  "activeView": "right",
+  "fileAction": "NONE",
+}
+`;
+
+exports[`reducers content should handle initial state 1`] = `
+Object {
+  "actionState": "INIT",
+  "activeView": "left",
+  "enableCopyToFuse": false,
+  "fileAction": "NONE",
+  "forced": false,
+  "isCanceled": false,
+  "isDone": false,
+  "isStart": false,
+  "itemRemains": Array [],
+  "left": Object {
+    "histories": Array [],
+    "infoType": 1,
+    "isInvalidPath": false,
+    "items": Array [],
+    "maskPattern": "*",
+    "needToRefresh": false,
+    "path": "/home/tm",
+    "position": 0,
+    "sortType": "FileAscDirFirst",
+  },
+  "needToConfirm": false,
+  "overwriteIfNewer": false,
+  "overwriteIfNewerSubDirectory": false,
+  "right": Object {
+    "histories": Array [],
+    "infoType": 1,
+    "isInvalidPath": false,
+    "items": Array [],
+    "maskPattern": "*",
+    "needToRefresh": false,
+    "path": "/home/tm",
+    "position": 0,
+    "sortType": "FileAscDirFirst",
+  },
+  "targetItem": null,
+}
+`;
+
+exports[`reducers content should handle unknown action type 1`] = `
+Object {
+  "actionState": "INIT",
+  "activeView": "left",
+  "enableCopyToFuse": false,
+  "fileAction": "NONE",
+  "forced": false,
+  "isCanceled": false,
+  "isDone": false,
+  "isStart": false,
+  "itemRemains": Array [],
+  "left": Object {
+    "histories": Array [],
+    "infoType": 1,
+    "isInvalidPath": false,
+    "items": Array [],
+    "maskPattern": "*",
+    "needToRefresh": false,
+    "path": "/home/tm",
+    "position": 0,
+    "sortType": "FileAscDirFirst",
+  },
+  "needToConfirm": false,
+  "overwriteIfNewer": false,
+  "overwriteIfNewerSubDirectory": false,
+  "right": Object {
+    "histories": Array [],
+    "infoType": 1,
+    "isInvalidPath": false,
+    "items": Array [],
+    "maskPattern": "*",
+    "needToRefresh": false,
+    "path": "/home/tm",
+    "position": 0,
+    "sortType": "FileAscDirFirst",
+  },
+  "targetItem": null,
+}
+`;
