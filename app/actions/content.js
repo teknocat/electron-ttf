@@ -204,48 +204,56 @@ function getOrderFunc(sort: SortType) {
   // 更新日時昇順／ディレクトリは上
   else if (sort === 'DateAscDirFirst') {
     return (a, b) => {
-      if (a.stats === null || a.stats.mtimeMs === null) return 1;
-      if (b.stats === null || b.stats.mtimeMs === null) return -1;
+      if (a.stats == null || a.stats.mtimeMs == null) return 1;
+      if (b.stats == null || b.stats.mtimeMs == null) return -1;
+      const statsA = a.stats;
+      const statsB = b.stats;
       return (
         Number(b.fileName === '..') - Number(a.fileName === '..') ||
         Number(b.isDirectory) - Number(a.isDirectory) ||
-        a.stats.mtimeMs - b.stats.mtimeMs
+        statsA.mtimeMs - statsB.mtimeMs
       );
     };
   }
   // 更新日時降順／ディレクトリは上
   else if (sort === 'DateDescDirFirst') {
     return (a, b) => {
-      if (a.stats === null || a.stats.mtimeMs === null) return 1;
-      if (b.stats === null || b.stats.mtimeMs === null) return -1;
+      if (a.stats == null || a.stats.mtimeMs == null) return 1;
+      if (b.stats == null || b.stats.mtimeMs == null) return -1;
+      const statsA = a.stats;
+      const statsB = b.stats;
       return (
         Number(b.fileName === '..') - Number(a.fileName === '..') ||
         Number(b.isDirectory) - Number(a.isDirectory) ||
-        b.stats.mtimeMs - a.stats.mtimeMs
+        statsB.mtimeMs - statsA.mtimeMs
       );
     };
   }
   // ファイルサイズ昇順／ディレクトリは上
   else if (sort === 'SizeAscDirFirst') {
     return (a, b) => {
-      if (a.stats === null || a.stats.size === null) return 1;
-      if (b.stats === null || b.stats.size === null) return -1;
+      if (a.stats == null || a.stats.size == null) return 1;
+      if (b.stats == null || b.stats.size == null) return -1;
+      const statsA = a.stats;
+      const statsB = b.stats;
       return (
         Number(b.fileName === '..') - Number(a.fileName === '..') ||
         Number(b.isDirectory) - Number(a.isDirectory) ||
-        a.stats.size - b.stats.size
+        statsA.size - statsB.size
       );
     };
   }
   // ファイルサイズ降順／ディレクトリは上
   else if (sort === 'SizeDescDirFirst') {
     return (a, b) => {
-      if (a.stats === null || a.stats.size === null) return 1;
-      if (b.stats === null || b.stats.size === null) return -1;
+      if (a.stats == null || a.stats.size == null) return 1;
+      if (b.stats == null || b.stats.size == null) return -1;
+      const statsA = a.stats;
+      const statsB = b.stats;
       return (
         Number(b.fileName === '..') - Number(a.fileName === '..') ||
         Number(b.isDirectory) - Number(a.isDirectory) ||
-        b.stats.size - a.stats.size
+        statsB.size - statsA.size
       );
     };
   }
