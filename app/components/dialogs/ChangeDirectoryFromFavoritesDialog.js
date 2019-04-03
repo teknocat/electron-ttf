@@ -3,14 +3,12 @@ import React, { Component } from 'react';
 import ReactModal from 'react-modal';
 import { RadioGroup, Radio } from 'react-radio-group';
 
-import type { HistoryStateType } from '../../utils/types';
 import styles from './Dialog.scss';
 
 type Props = {
-  histories: Array<HistoryStateType>,
-  currentPath: string,
+  favorites: ?Array<string>,
   activeView: string,
-  closeDialog: (boolean, ?HistoryStateType) => void
+  closeDialog: (boolean, string) => void
 };
 
 type State = {
@@ -18,10 +16,7 @@ type State = {
   selectedValue: ?number
 };
 
-// 選択可能な履歴数
-const MAX_ENTRIES = 10;
-
-export default class ChangeDirectoryFromHistoryDialog extends Component<
+export default class ChangeDirectoryFromFavoritesDialog extends Component<
   Props,
   State
 > {
@@ -34,16 +29,8 @@ export default class ChangeDirectoryFromHistoryDialog extends Component<
 
   handleCloseModal(submit: boolean) {
     this.setState({ showModal: false });
-    const { histories, currentPath } = this.props;
-    const filteredHistories = histories.filter(
-      history => history.path !== currentPath
-    );
-    const selected: ?HistoryStateType =
-      this.state.selectedValue != null && filteredHistories != null
-        ? filteredHistories[this.state.selectedValue]
-        : null;
-    // console.log('value', this.state.selectedValue);
-    // console.log('selected', selected);
+    const selected = this.state.selectedValue != null && this.props.favorites
+      ? this.props.favorites[this.state.selectedValue] : '';
     this.props.closeDialog(submit, selected);
   }
 
@@ -71,34 +58,34 @@ export default class ChangeDirectoryFromHistoryDialog extends Component<
     });
   }
 
-  renderItem = (history: HistoryStateType, index: number) => (
+  renderItem = (favorite: string, index: number) => (
     <label htmlFor={index}>
       <Radio value={index} autoFocus={index === 0} />
-      {history.path}
+      {favorite}
     </label>
   );
 
-  renderList = (histories: Array<HistoryStateType>) =>
+  renderList = (favorites: Array<string>) =>
     // $FlowFixMe
-    histories
-      .slice(0, MAX_ENTRIES)
-      .map((history: HistoryStateType, index: number) => (
+    favorites
+      .map((favorite: string, index: number) => (
         <div key={index.toString()}>
-          {this.renderItem(history, index)}
+          {this.renderItem(favorite, index)}
           <br />
         </div>
       ));
 
   render() {
-    const { activeView, histories, currentPath } = this.props;
+    const { activeView, favorites } = this.props;
 
     if (!this.state.showModal) return null;
+    if (!favorites) return null;
 
     return (
       // $FlowFixMe
       <ReactModal
         isOpen={this.state.showModal}
-        contentLabel="Changing Directory From History Dialog"
+        contentLabel="Changing Directory From Favorites Dialog"
         ariaHideApp={false}
         parentSelector={() => document.querySelector('#mainPanel')}
         className={
@@ -108,17 +95,15 @@ export default class ChangeDirectoryFromHistoryDialog extends Component<
         }
         overlayClassName={styles.dialogOverlay}
       >
-        <h3>履歴からのディレクトリ変更</h3>
-        <form id="historyListForm" onSubmit={this.handleCloseModal.bind(this)}>
+        <h3>登録パスリストからのディレクトリ変更</h3>
+        <form id="favoritesForm" onSubmit={this.handleCloseModal.bind(this)}>
           <RadioGroup
-            name="history"
+            name="favorite"
             selectedValue={this.state.selectedValue}
             onChange={this.handleChange.bind(this)}
             onKeyDown={this.onKeyDown.bind(this)}
           >
-            {this.renderList(
-              histories.filter(history => history.path !== currentPath)
-            )}
+            {this.renderList(favorites)}
           </RadioGroup>
         </form>
       </ReactModal>

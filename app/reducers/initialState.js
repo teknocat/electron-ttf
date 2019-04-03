@@ -83,7 +83,8 @@ const preferences = {
   kbd101: false,
   // TODO windowsで設定すべき値の検討
   watchExcludes: is.windows() ? [] : ['/dev', '/var/log'],
-  showPathOnTitleBar: false
+  showPathOnTitleBar: false,
+  favoritePathList: []
 };
 
 export function getInitialPreferences() {

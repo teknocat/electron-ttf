@@ -71,6 +71,17 @@
   background-color: rgb(255, 255, 180);
 }
 
+.textArea {
+  width: 100%;
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 12px;
+  resize: vertical;
+}
+
+.textArea:focus {
+  background-color: rgb(255, 255, 180);
+}
+
 .buttonsContainer {
   display: table;
   width: 100%;

@@ -12,7 +12,8 @@ type Props = {
 type State = {
   showModal: boolean,
   preferences: PreferenceType,
-  watchExcludesString: ?string
+  watchExcludesString: ?string,
+  favoritePathListString: ?string
 };
 
 export default class PreferenceDialog extends Component<Props, State> {
@@ -22,6 +23,7 @@ export default class PreferenceDialog extends Component<Props, State> {
   cbKbd101: any;
   textWatchExcludes: any;
   cbShowPathOnTitleBar: any;
+  textAreaFavoritePathList: any;
   okButton: any;
   cancelButton: any;
 
@@ -31,9 +33,11 @@ export default class PreferenceDialog extends Component<Props, State> {
       terminalEmulator: null,
       kbd101: true,
       watchExcludes: [],
-      showPathOnTitleBar: false
+      showPathOnTitleBar: false,
+      favoritePathList: [],
     },
-    watchExcludesString: null
+    watchExcludesString: null,
+    favoritePathListString: null
   };
 
   closeModal(submit: boolean) {
@@ -47,6 +51,10 @@ export default class PreferenceDialog extends Component<Props, State> {
       preferences.watchExcludes =
         this.state.watchExcludesString ?
           this.state.watchExcludesString.split(',').map(s => s.trim()) :
+          [];
+      preferences.favoritePathList =
+        this.state.favoritePathListString ?
+          this.state.favoritePathListString.split('\n').map(s => s.trim()) :
           [];
       this.setState({ preferences });
       this.closeModal(true);
@@ -74,6 +82,9 @@ export default class PreferenceDialog extends Component<Props, State> {
       case 'preference_dialog_showPathOnTitleBar':
         preferences.showPathOnTitleBar = e.target.checked;
         break;
+      case 'preference_dialog_favoritePathList':
+        this.setState({ favoritePathListString: e.target.value});
+        break;
       default:
         return;
     }
@@ -85,6 +96,9 @@ export default class PreferenceDialog extends Component<Props, State> {
     // Up
     if (e.keyCode === 38) {
       switch (e.target.id) {
+        case 'preference_dialog_terminal_emulator':
+          this.cancelButton.focus();
+          break;
         case 'preference_dialog_kbd101':
           this.textTerminalEmulator.focus();
           break;
@@ -95,7 +109,7 @@ export default class PreferenceDialog extends Component<Props, State> {
           this.textWatchExcludes.focus();
           break;
         case 'preference_dialog_ok':
-          this.cbShowPathOnTitleBar.focus();
+          this.textAreaFavoritePathList.focus();
           break;
         case 'preference_dialog_cancel':
           this.okButton.focus();
@@ -117,10 +131,13 @@ export default class PreferenceDialog extends Component<Props, State> {
           this.cbShowPathOnTitleBar.focus();
           break;
         case 'preference_dialog_showPathOnTitleBar':
-          this.okButton.focus();
+          this.textAreaFavoritePathList.focus();
           break;
         case 'preference_dialog_ok':
           this.cancelButton.focus();
+          break;
+        case 'preference_dialog_cancel':
+          this.textTerminalEmulator.focus();
           break;
         default:
           break;
@@ -129,7 +146,9 @@ export default class PreferenceDialog extends Component<Props, State> {
 
     // Enter
     if (e.keyCode === 13) {
-      if (e.target.id === 'preference_dialog_cancel') {
+      if (e.target.id === 'preference_dialog_favoritePathList') {
+        ;
+      } else if (e.target.id === 'preference_dialog_cancel') {
         this.handleCancel();
       } else {
         this.handleOK();
@@ -151,7 +170,8 @@ export default class PreferenceDialog extends Component<Props, State> {
     this.setState({
       showModal: true,
       preferences: { ...prefs },
-      watchExcludesString: prefs.watchExcludes ? prefs.watchExcludes.join(',') : ''
+      watchExcludesString: prefs.watchExcludes ? prefs.watchExcludes.join(',') : '',
+      favoritePathListString: prefs.favoritePathList ? prefs.favoritePathList.join('\n') : '',
     });
     this.textTerminalEmulator.focus();
   }
@@ -224,6 +244,20 @@ export default class PreferenceDialog extends Component<Props, State> {
               />
               タイトルバーに現在のディレクトリパス情報を表示
             </label>
+          </div>
+          <div className={styles.detailsContainer}>
+            <span className={styles.label}>登録パス(改行区切り):</span>
+            <textarea
+              id="preference_dialog_favoritePathList"
+              className={styles.textArea}
+              value={this.state.favoritePathListString}
+              onChange={this.handleChange.bind(this)}
+              ref={ref => {
+                this.textAreaFavoritePathList = ref;
+              }}
+              rows="4"
+              wrap="off"
+            />
           </div>
 
           <div className={styles.buttonsContainer}>

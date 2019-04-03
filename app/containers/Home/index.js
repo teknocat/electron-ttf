@@ -64,6 +64,7 @@ import GenericDialog from '../../components/dialogs/GenericDialog';
 import Content from '../../components/Content';
 import CreateDirectoryDialog from '../../components/dialogs/CreateDirectoryDialog';
 import ChangeDirectoryDialog from '../../components/dialogs/ChangeDirectoryDialog';
+import ChangeDirectoryFromFavoritesDialog from '../../components/dialogs/ChangeDirectoryFromFavoritesDialog';
 import ChangeDirectoryFromHistoryDialog from '../../components/dialogs/ChangeDirectoryFromHistoryDialog';
 import RenameDialog from '../../components/dialogs/RenameDialog';
 import CopyMoveDialog from '../../components/dialogs/CopyMoveDialog';
@@ -226,6 +227,7 @@ class Home extends Component<Props, State> {
   statusBar: any;
   createDirectoryDialog: any;
   changeDirectoryDialog: any;
+  changeDirectoryFromFavoritesDialog: any;
   changeDirectoryFromHistoryDialog: any;
   changeSortTypeDialog: any;
   renameDialog: any;
@@ -235,7 +237,6 @@ class Home extends Component<Props, State> {
   copyDialog: any;
   moveDialog: any;
   fileMaskDialog: any;
-  stopSpinner: any;
 
   constructor() {
     super();
@@ -302,6 +303,7 @@ class Home extends Component<Props, State> {
     Mousetrap.bind('shift+home', this.markAllItems);
 
     Mousetrap.bind('s', this.openChangeSortTypeDialog);
+    Mousetrap.bind('j', this.openChangeDirectoryFromFavoritesDialog);
     Mousetrap.bind('J', this.openChangeDirectoryDialog);
     Mousetrap.bind('h', this.openChangeDirectoryFromHistoryDialog);
     Mousetrap.bind('f', this.launchFindMode);
@@ -727,6 +729,23 @@ class Home extends Component<Props, State> {
     }
   };
 
+  openChangeDirectoryFromFavoritesDialog = e => {
+    // 登録リストがある場合のみダイアログ表示
+    if (this.state.preferences.favoritePathList
+      && this.state.preferences.favoritePathList.length > 0) {
+      e.preventDefault();
+      Mousetrap.pause();
+      this.changeDirectoryFromFavoritesDialog.open();
+    }
+  };
+
+  closeChangeDirectoryFromFavoritesDialog = (submit: boolean, value: string) => {
+    Mousetrap.unpause();
+    if (submit) {
+      this.props.changeDirectoryTo(this.props.content.activeView, value);
+    }
+  };
+
   openChangeDirectoryFromHistoryDialog = e => {
     const { activeContent } = getActiveContent(this.props.content);
     // 履歴がある場合のみダイアログ表示
@@ -1027,6 +1046,17 @@ class Home extends Component<Props, State> {
               }}
               closeDialog={this.closeChangeDirectoryDialog.bind(this)}
               activeView={activeView}
+            />
+            <ChangeDirectoryFromFavoritesDialog
+              ref={ref => {
+                this.changeDirectoryFromFavoritesDialog = ref;
+              }}
+              closeDialog={this.closeChangeDirectoryFromFavoritesDialog.bind(
+                this
+              )}
+              activeView={activeView}
+              favorites={this.state.preferences.favoritePathList}
+              currentPath={activeContent.path}
             />
             <ChangeDirectoryFromHistoryDialog
               ref={ref => {

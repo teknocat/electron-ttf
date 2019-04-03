@@ -19,7 +19,8 @@ export const setupPreferences = () => {
     terminalEmulator: myPrefs && myPrefs.terminalEmulator ? myPrefs.terminalEmulator : initPrefs.terminalEmulator,
     kbd101: myPrefs && myPrefs.kbd101 ? myPrefs.kbd101 : initPrefs.kbd101,
     watchExcludes: myPrefs && myPrefs.watchExcludes ? myPrefs.watchExcludes : initPrefs.watchExcludes,
-    showPathOnTitleBar: myPrefs && myPrefs.showPathOnTitleBar ? myPrefs.showPathOnTitleBar : initPrefs.showPathOnTitleBar
+    showPathOnTitleBar: myPrefs && myPrefs.showPathOnTitleBar ? myPrefs.showPathOnTitleBar : initPrefs.showPathOnTitleBar,
+    favoritePathList: myPrefs && myPrefs.favoritePathList ? myPrefs.favoritePathList : initPrefs.favoritePathList
   }
 };
 

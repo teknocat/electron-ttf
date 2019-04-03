@@ -84,7 +84,8 @@ export type PreferenceType = {
   terminalEmulator?: ?string,
   kbd101?: ?boolean,
   watchExcludes?: Array<string>,
-  showPathOnTitleBar?: ?boolean
+  showPathOnTitleBar?: ?boolean,
+  favoritePathList?: ?Array<string>
 };
 
 export const SWITCH_ACTIVE_VIEW = 'SWITCH_ACTIVE_VIEW';
