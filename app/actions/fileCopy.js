@@ -24,7 +24,8 @@ function mayCopyAction(
   needToConfirm,
   isForced,
   ifNewer,
-  ifNewerSubDirectory
+  ifNewerSubDirectory,
+  destDir
 ): ActionType {
   return {
     type: MAY_COPY_ITEM,
@@ -34,7 +35,8 @@ function mayCopyAction(
     isForced,
     ifNewer,
     ifNewerSubDirectory,
-    remains
+    remains,
+    destDir
   };
 }
 
@@ -44,7 +46,8 @@ export function mayCopy(
   isForced: boolean,
   ifNewer: boolean,
   enableCopyToFuse: boolean,
-  ifNewerSubDirectory?: boolean = false
+  ifNewerSubDirectory?: boolean = false,
+  favoritePath?: string
 ) {
   return (dispatch: (action: ActionType) => void, getState: Function) => {
     const { content } = getState();
@@ -55,7 +58,7 @@ export function mayCopy(
     if (items.length > 0) {
       const target = items.shift();
 
-      const destDir = convertPath(content[anotherSideView(activeView)].path);
+      const destDir = convertPath(favoritePath || content[anotherSideView(activeView)].path);
       if (destDir) {
         if (is.linux()) {
           // 対象ディレクトリのファイルシステムタイプを stat -f --printf=%T で取得。fuseblkなら未実装扱いする
@@ -86,7 +89,8 @@ export function mayCopy(
                 needToConfirm,
                 isForced,
                 ifNewer,
-                ifNewerSubDirectory
+                ifNewerSubDirectory,
+                favoritePath
               )
             );
           });
@@ -103,16 +107,15 @@ export function mayCopy(
               needToConfirm,
               isForced,
               ifNewer,
-              ifNewerSubDirectory
+              ifNewerSubDirectory,
+              favoritePath
             )
           );
         }
       } else {
         dispatch(
           addLogMessage(
-            `Can't copy to directory: ${
-              content[anotherSideView(activeView)].path
-            }`
+            `Can't copy to directory: ${destDir || favoritePath || content[anotherSideView(activeView)].path}`
           )
         );
       }
@@ -123,11 +126,13 @@ export function mayCopy(
 // ifNewer: コピー対象が元よりも新しい場合のみコピー
 // newFileName: 名前変更コピー時のファイル名
 // ifNewerSubDirectory: コピー対象のサブディレクトリ、ファイルが元よりも新しい場合のみコピー
+// destDir: コピー先ディレクトリ(登録ディレクトリへのコピー用)
 export function copyItems(
   withShiftKey: boolean,
   ifNewer: boolean,
   newFileName: ?string,
   ifNewerSubDirectory?: boolean = false,
+  destDir: ?string
 ) {
   return (dispatch: (action: ActionType) => void, getState: Function) => {
     const { content } = getState();
@@ -148,11 +153,11 @@ export function copyItems(
       return;
     }
 
-    const srcDir = convertPath(activeContent.path);
-    const destDir = convertPath(idleContent.path);
-    if (srcDir == null || destDir == null) return;
-    const srcPath = path.join(srcDir, targetItem.fileName);
-    const destPath = path.join(destDir, newFileName || targetItem.fileName);
+    const srcDirectory = convertPath(activeContent.path);
+    const destDirectory = convertPath(destDir || idleContent.path);
+    if (srcDirectory == null || destDirectory == null) return;
+    const srcPath = path.join(srcDirectory, targetItem.fileName);
+    const destPath = path.join(destDirectory, newFileName || targetItem.fileName);
 
     console.log(`${srcPath} -> ${destPath}`);
 

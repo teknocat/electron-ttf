@@ -8,7 +8,8 @@ import styles from './Dialog.scss';
 type Props = {
   favorites: ?Array<string>,
   activeView: string,
-  closeDialog: (boolean, string) => void
+  closeDialog: (boolean, string) => void,
+  message: string
 };
 
 type State = {
@@ -16,7 +17,7 @@ type State = {
   selectedValue: ?number
 };
 
-export default class ChangeDirectoryFromFavoritesDialog extends Component<
+export default class SelectFavoriteDialog extends Component<
   Props,
   State
 > {
@@ -35,7 +36,6 @@ export default class ChangeDirectoryFromFavoritesDialog extends Component<
   }
 
   handleChange(value: number) {
-    // console.log("handleChange", value);
     this.setState({ selectedValue: value });
   }
 
@@ -44,14 +44,14 @@ export default class ChangeDirectoryFromFavoritesDialog extends Component<
   }
 
   onKeyDown(e: SyntheticKeyboardEvent<*>) {
-    // console.log(`onKeyDown KeyCode:${e.keyCode}`)
-    // console.log("selectedValue", this.state.selectedValue);
-    if (e.keyCode === 13) this.handleCloseModal(true); // Enter
+    if (e.keyCode === 13) { // Enter
+      e.preventDefault();
+      this.handleCloseModal(true);
+    }
     if (e.keyCode === 27) this.handleCloseModal(false); // ESC
   }
 
   open() {
-    // console.log('open dialog');
     this.setState({
       showModal: true,
       selectedValue: 0
@@ -76,7 +76,7 @@ export default class ChangeDirectoryFromFavoritesDialog extends Component<
       ));
 
   render() {
-    const { activeView, favorites } = this.props;
+    const { activeView, favorites, message } = this.props;
 
     if (!this.state.showModal) return null;
     if (!favorites) return null;
@@ -85,7 +85,7 @@ export default class ChangeDirectoryFromFavoritesDialog extends Component<
       // $FlowFixMe
       <ReactModal
         isOpen={this.state.showModal}
-        contentLabel="Changing Directory From Favorites Dialog"
+        contentLabel="Select Favorite Dialog"
         ariaHideApp={false}
         parentSelector={() => document.querySelector('#mainPanel')}
         className={
@@ -95,7 +95,7 @@ export default class ChangeDirectoryFromFavoritesDialog extends Component<
         }
         overlayClassName={styles.dialogOverlay}
       >
-        <h3>登録パスリストからのディレクトリ変更</h3>
+        <h3>{ message }</h3>
         <form id="favoritesForm" onSubmit={this.handleCloseModal.bind(this)}>
           <RadioGroup
             name="favorite"

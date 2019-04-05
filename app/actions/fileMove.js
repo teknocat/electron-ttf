@@ -21,7 +21,8 @@ function mayMoveAction(
   remains,
   needToConfirm,
   isForced,
-  ifNewer
+  ifNewer,
+  destDir
 ) {
   return {
     type: MAY_MOVE_ITEM,
@@ -30,7 +31,8 @@ function mayMoveAction(
     needToConfirm,
     isForced,
     ifNewer,
-    remains
+    remains,
+    destDir
   };
 }
 
@@ -38,7 +40,8 @@ export function mayMove(
   viewPosition: string,
   remains: ?Array<ItemStateType>,
   isForced: boolean,
-  ifNewer: boolean
+  ifNewer: boolean,
+  favoritePath?: string
 ) {
   return (dispatch: (action: ActionType) => void, getState: Function) => {
     const { content } = getState();
@@ -49,7 +52,7 @@ export function mayMove(
     if (items.length > 0) {
       const target = items.shift();
 
-      const destDir = convertPath(content[anotherSideView(activeView)].path);
+      const destDir = convertPath(favoritePath || content[anotherSideView(activeView)].path);
       if (destDir) {
         const destPath = path.join(destDir, target.fileName);
         // ファイルが存在している場合は確認が必要
@@ -62,15 +65,14 @@ export function mayMove(
             items,
             needToConfirm,
             isForced,
-            ifNewer
+            ifNewer,
+            favoritePath
           )
         );
       } else {
         dispatch(
           addLogMessage(
-            `Can't move to directory: ${
-              content[anotherSideView(activeView)].path
-            }`
+            `Can't move to directory: ${destDir || favoritePath || content[anotherSideView(activeView)].path}`
           )
         );
       }
@@ -78,16 +80,19 @@ export function mayMove(
   };
 }
 
-// ifNewer: コピー対象が元よりも新しい場合のみコピー
+// ifNewer: 移動対象が元よりも新しい場合のみ移動
 // newFileName: 名前変更移動時のファイル名
+// destDir: 移動先ディレクトリ(登録ディレクトリへの移動用)
 export function moveItems(
   withShiftKey: boolean,
   ifNewer: boolean,
-  newFileName: ?string
+  newFileName: ?string,
+  destDir: ?string
 ) {
   return (dispatch: (action: ActionType) => void, getState: Function) => {
     const { content } = getState();
     // console.log('copyItems', content);
+    // console.log('destDir', destDir);
     const { activeView, activeContent, idleContent } = getActiveContent(
       content
     );
@@ -105,11 +110,12 @@ export function moveItems(
     }
 
     // 移動処理を実施
-    const srcDir = convertPath(activeContent.path);
-    const destDir = convertPath(idleContent.path);
-    if (srcDir == null || destDir == null) return;
-    const srcPath = path.join(srcDir, targetItem.fileName);
-    const destPath = path.join(destDir, newFileName || targetItem.fileName);
+    const srcDirectory = convertPath(activeContent.path);
+    const destDirectory = convertPath(destDir || idleContent.path);
+    // console.log('destDirectory', destDirectory);
+    if (srcDirectory == null || destDirectory == null) return;
+    const srcPath = path.join(srcDirectory, targetItem.fileName);
+    const destPath = path.join(destDirectory, newFileName || targetItem.fileName);
 
     console.log(`${srcPath} -> ${destPath}`);
 
@@ -185,7 +191,7 @@ export function moveItems(
     } else {
       // mvを使う場合、移動元がディレクトリの場合、移動先は親ディレクトリ指定にする
       // ただし変更後名が指定されている場合はそれを利用する
-      const destPathMv = targetItem.isDirectory && !newFileName ? destDir : destPath;
+      const destPathMv = targetItem.isDirectory && !newFileName ? destDirectory : destPath;
       const args = [srcPath, destPathMv];
       const process = spawn('mv', args);
       // const process = spawn('sleep', ['5']);

@@ -64,7 +64,7 @@ import GenericDialog from '../../components/dialogs/GenericDialog';
 import Content from '../../components/Content';
 import CreateDirectoryDialog from '../../components/dialogs/CreateDirectoryDialog';
 import ChangeDirectoryDialog from '../../components/dialogs/ChangeDirectoryDialog';
-import ChangeDirectoryFromFavoritesDialog from '../../components/dialogs/ChangeDirectoryFromFavoritesDialog';
+import SelectFavoriteDialog from '../../components/dialogs/SelectFavoriteDialog';
 import ChangeDirectoryFromHistoryDialog from '../../components/dialogs/ChangeDirectoryFromHistoryDialog';
 import RenameDialog from '../../components/dialogs/RenameDialog';
 import CopyMoveDialog from '../../components/dialogs/CopyMoveDialog';
@@ -135,7 +135,8 @@ type Props = {
     forced: boolean,
     overwriteIfNewer: boolean,
     newFileName: ?string,
-    OverwriteIfNewerSubDirectory: ?boolean
+    OverwriteIfNewerSubDirectory: ?boolean,
+    destDir: ?string
   ) => void,
   mayCopy: (
     activeView: string,
@@ -143,7 +144,8 @@ type Props = {
     forced: boolean,
     overwriteIfNewer: boolean,
     enableCopyToFuse: boolean,
-    OverwriteIfNewerSubDirectory: ?boolean
+    OverwriteIfNewerSubDirectory: ?boolean,
+    targetPath?: ?string
   ) => void,
   cancelCopy: boolean => void,
   fetchItems: (
@@ -158,12 +160,18 @@ type Props = {
     forced: boolean
   ) => void,
   cancelDelete: boolean => void,
-  moveItems: (forced: boolean, ifNewer: boolean, newFileName: ?string) => void,
+  moveItems: (
+    forced: boolean,
+    ifNewer: boolean,
+    newFileName: ?string,
+    destDir: ?string
+  ) => void,
   mayMove: (
     viewPosition: string,
     remains: ?Array<ItemStateType>,
     forced: boolean,
-    ifNewer: boolean
+    ifNewer: boolean,
+    targetPath?: ?string
   ) => void,
   cancelMove: boolean => void,
   createDirectory: (viewPosition: string, directory: ?string) => void,
@@ -228,6 +236,8 @@ class Home extends Component<Props, State> {
   createDirectoryDialog: any;
   changeDirectoryDialog: any;
   changeDirectoryFromFavoritesDialog: any;
+  copyToFavoriteDialog: any;
+  moveToFavoriteDialog: any;
   changeDirectoryFromHistoryDialog: any;
   changeSortTypeDialog: any;
   renameDialog: any;
@@ -291,6 +301,7 @@ class Home extends Component<Props, State> {
     Mousetrap.bind('mod+space', this.rangeMarkItem);
     Mousetrap.bind('shift+mod+space', this.rangeMarkItem);
     Mousetrap.bind('c', this.copyItems);
+    Mousetrap.bind('C', this.openCopyToFavoriteDialog);
     Mousetrap.bind('k', this.deleteItems);
     Mousetrap.bind('m', this.execKeyAction);
     Mousetrap.bind('M', this.execKeyAction);
@@ -584,6 +595,39 @@ class Home extends Component<Props, State> {
     }
   };
 
+  openCopyToFavoriteDialog = e => {
+    // 登録リストがある場合のみダイアログ表示
+    if (this.state.preferences.favoritePathList
+      && this.state.preferences.favoritePathList.length > 0) {
+      e.preventDefault();
+      Mousetrap.pause();
+      this.copyToFavoriteDialog.open();
+    }
+  };
+
+  closeCopyToFavoriteDialog = (submit: boolean, value: string) => {
+    Mousetrap.unpause();
+    if (submit) {
+      // 指定ディレクトリへのコピー実施
+      const { activeView, activeContent } = getActiveContent(this.props.content);
+      // コピーすべきデータがある場合のみ実行
+      if (activeContent.items.filter(item => item.marked).length > 0) {
+        // 指定ディレクトリへの移動
+        console.log('Copying to the directory:', value);
+        this.logView.addMessage(`Copying to the directory: ${value}`);
+        this.props.mayCopy(
+          activeView,
+          null,
+          false,
+          this.props.content.overwriteIfNewer,
+          this.props.content.enableCopyToFuse,
+          this.props.content.overwriteIfNewerSubDirectory,
+          value
+        );
+      }
+    }
+  };
+
   deleteItems = () => {
     const { activeView, activeContent } = getActiveContent(this.props.content);
     // 削除すべきデータがある場合のみ実行
@@ -602,6 +646,37 @@ class Home extends Component<Props, State> {
         false,
         this.props.content.overwriteIfNewer
       );
+    }
+  };
+
+  openMoveToFavoriteDialog = e => {
+    // 登録リストがある場合のみダイアログ表示
+    if (this.state.preferences.favoritePathList
+      && this.state.preferences.favoritePathList.length > 0) {
+      e.preventDefault();
+      Mousetrap.pause();
+      this.moveToFavoriteDialog.open();
+    }
+  };
+
+  closeMoveToFavoriteDialog = (submit: boolean, value: string) => {
+    Mousetrap.unpause();
+    if (submit) {
+      // 指定ディレクトリへの移動実施
+      const { activeView, activeContent } = getActiveContent(this.props.content);
+      // 移動すべきデータがある場合のみ実行
+      if (activeContent.items.filter(item => item.marked).length > 0) {
+        // 指定ディレクトリへの移動
+        console.log('Moving to the directory:', value);
+        this.logView.addMessage(`Moving to the directory: ${value}`);
+        this.props.mayMove(
+          activeView,
+          null,
+          false,
+          this.props.content.overwriteIfNewer,
+          value
+        );
+      }
     }
   };
 
@@ -650,7 +725,7 @@ class Home extends Component<Props, State> {
     if (activeContent.items.filter(item => item.marked).length > 0) {
       if (combo === 'm') this.moveItems();
       if (combo === 'M') {
-        // TODO M移動処理(登録済ディレクトリへの移動)実装
+        this.openMoveToFavoriteDialog(e);
       }
     } else if (combo === 'm' || combo === 'M') {
       Mousetrap.pause();
@@ -1047,7 +1122,7 @@ class Home extends Component<Props, State> {
               closeDialog={this.closeChangeDirectoryDialog.bind(this)}
               activeView={activeView}
             />
-            <ChangeDirectoryFromFavoritesDialog
+            <SelectFavoriteDialog
               ref={ref => {
                 this.changeDirectoryFromFavoritesDialog = ref;
               }}
@@ -1057,6 +1132,31 @@ class Home extends Component<Props, State> {
               activeView={activeView}
               favorites={this.state.preferences.favoritePathList}
               currentPath={activeContent.path}
+              message="登録パスリストからのディレクトリ変更"
+            />
+            <SelectFavoriteDialog
+              ref={ref => {
+                this.copyToFavoriteDialog = ref;
+              }}
+              closeDialog={this.closeCopyToFavoriteDialog.bind(
+                this
+              )}
+              activeView={activeView}
+              favorites={this.state.preferences.favoritePathList}
+              currentPath={activeContent.path}
+              message="登録パスリストへのコピー"
+            />
+            <SelectFavoriteDialog
+              ref={ref => {
+                this.moveToFavoriteDialog = ref;
+              }}
+              closeDialog={this.closeMoveToFavoriteDialog.bind(
+                this
+              )}
+              activeView={activeView}
+              favorites={this.state.preferences.favoritePathList}
+              currentPath={activeContent.path}
+              message="登録パスリストへの移動"
             />
             <ChangeDirectoryFromHistoryDialog
               ref={ref => {

@@ -7,13 +7,13 @@ const Mousetrap = require('mousetrap-pause')(require('mousetrap'));
 
 type Props = {
   content: ContentStateType,
-  copyItems: (forced: boolean, overwriteIfNewer: boolean, newFileName: ?string, OverwriteIfNewerSubDirectory: ?boolean) => void,
-  mayCopy: (viewPosition: string, remains: ?Array<ItemStateType>, forced: boolean, overwriteIfNewer: boolean, enableCopyToFuse: boolean, OverwriteIfNewerSubDirectory: ?boolean) => void,
+  copyItems: (forced: boolean, overwriteIfNewer: boolean, newFileName: ?string, OverwriteIfNewerSubDirectory: ?boolean, destDir: ?string) => void,
+  mayCopy: (viewPosition: string, remains: ?Array<ItemStateType>, forced: boolean, overwriteIfNewer: boolean, enableCopyToFuse: boolean, OverwriteIfNewerSubDirectory: ?boolean, destDir?: ?string) => void,
   fetchItems: (viewPosition: string, keepPosition?: boolean, keepMarks?: boolean) => void,
   deleteItems: (forced: boolean) => void,
   mayDelete: (viewPosition: string, remains: ?Array<ItemStateType>, forced: boolean) => void,
-  moveItems: (forced: boolean, ifNewer: boolean, newFileName: ?string) => void,
-  mayMove: (viewPosition: string, remains: ?Array<ItemStateType>, forced: boolean, ifNewer: boolean) => void,
+  moveItems: (forced: boolean, ifNewer: boolean, newFileName: ?string, destDir: ?string) => void,
+  mayMove: (viewPosition: string, remains: ?Array<ItemStateType>, forced: boolean, ifNewer: boolean, destDir?: ?string) => void,
   reset: () => void,
   refreshDone: (viewPosition: string) => void
 };
@@ -25,8 +25,9 @@ export const needToUpdate = (prevProps: Props, props: Props) =>
 
 export const doCopy = (prevProps: Props, props: Props, _this: any) => {
   if (!needToUpdate(prevProps, props)) return;
-  if (!props.content) return;
-  const { targetItem, actionState } = props.content;
+  const { content } = props;
+  if (!content) return;
+  const { targetItem, actionState } = content;
   if (!targetItem || !actionState) return;
 
   // コピー前
@@ -40,7 +41,7 @@ export const doCopy = (prevProps: Props, props: Props, _this: any) => {
     _this.logView.addMessage(`Copy: ${targetItem.fileName}`);
 
     // コピーするかどうか確認が必要
-    if (props.content.needToConfirm) {
+    if (content.needToConfirm) {
       console.log('NEED TO CONFIRM:', targetItem.fileName);
       // 確認ダイアログ出して処理を促す
       _this.spinner.hide();
@@ -48,14 +49,20 @@ export const doCopy = (prevProps: Props, props: Props, _this: any) => {
     } else {
       console.log('Copy start:', targetItem.fileName);
       _this.spinner.show();
-      props.copyItems(props.content.forced, props.content.overwriteIfNewer, null, props.content.overwriteIfNewerSubDirectory);
+      props.copyItems(
+        content.forced,
+        content.overwriteIfNewer,
+        null,
+        content.overwriteIfNewerSubDirectory,
+        content.destDir
+      );
     }
   }
 
   // コピー中
   if (actionState === 'DOING') {
     console.log('Copying:', targetItem.fileName);
-    console.log('childProcess:', props.content.childProcess);
+    console.log('childProcess:', content.childProcess);
   }
 
     // コピー後
@@ -75,7 +82,7 @@ export const doCopy = (prevProps: Props, props: Props, _this: any) => {
     // コピー時エラー
     if (actionState === 'ERROR') {
       console.log('Copy error:', targetItem.fileName);
-      const message = props.content.logMessage || 'ERROR';
+      const message = content.logMessage || 'ERROR';
       _this.logView.updateMessage(` ... ${message}`);
     }
 
@@ -86,9 +93,9 @@ export const doCopy = (prevProps: Props, props: Props, _this: any) => {
     }
 
     // 後続のアイテムが存在すれば続けてコピー
-    const { activeView, itemRemains, forced, overwriteIfNewer, enableCopyToFuse, overwriteIfNewerSubDirectory } = props.content;
+    const { activeView, itemRemains, forced, overwriteIfNewer, enableCopyToFuse, overwriteIfNewerSubDirectory, destDir } = content;
     if (itemRemains.length > 0) {
-      props.mayCopy(activeView, itemRemains, forced, overwriteIfNewer, enableCopyToFuse, overwriteIfNewerSubDirectory);
+      props.mayCopy(activeView, itemRemains, forced, overwriteIfNewer, enableCopyToFuse, overwriteIfNewerSubDirectory, destDir);
     } else {
       _this.spinner.hide();
       _this.logView.addMessage('Finished.');
@@ -177,8 +184,9 @@ export const doDelete = (prevProps: Props, props: Props, _this: any) => {
 
 export const doMove = (prevProps: Props, props: Props, _this: any) => {
   if (!needToUpdate(prevProps, props)) return;
-  if (!props.content) return;
-  const { targetItem, actionState } = props.content;
+  const { content } = props;
+  if (!content) return;
+  const { targetItem, actionState } = content;
   if (!targetItem || !actionState) return;
 
   // 移動前
@@ -192,7 +200,7 @@ export const doMove = (prevProps: Props, props: Props, _this: any) => {
     _this.logView.addMessage(`Move: ${targetItem.fileName}`);
 
     // 移動するかどうか確認が必要
-    if (props.content.needToConfirm) {
+    if (content.needToConfirm) {
       console.log('NEED TO CONFIRM:', targetItem.fileName);
       // 確認ダイアログ出して処理を促す
       _this.spinner.hide();
@@ -200,14 +208,14 @@ export const doMove = (prevProps: Props, props: Props, _this: any) => {
     } else {
       console.log('Move start:', targetItem.fileName);
       _this.spinner.show();
-      props.moveItems(props.content.forced, props.content.overwriteIfNewer);
+      props.moveItems(content.forced, content.overwriteIfNewer, null, content.destDir);
     }
   }
 
   // 移動中
   if (actionState === 'DOING') {
     console.log('Moving:', targetItem.fileName);
-    console.log('childProcess:', props.content.childProcess);
+    console.log('childProcess:', content.childProcess);
   }
 
   // 移動後
@@ -227,7 +235,7 @@ export const doMove = (prevProps: Props, props: Props, _this: any) => {
     // 移動時エラー
     if (actionState === 'ERROR') {
       console.log('Move error:', targetItem.fileName);
-      const message = props.content.logMessage || 'ERROR';
+      const message = content.logMessage || 'ERROR';
       _this.logView.updateMessage(` ... ${message}`);
     }
     // 移動スキップ
@@ -237,9 +245,9 @@ export const doMove = (prevProps: Props, props: Props, _this: any) => {
     }
 
     // 後続のアイテムが存在すれば続けて移動
-    const { activeView, itemRemains, forced, overwriteIfNewer } = props.content;
+    const { activeView, itemRemains, forced, overwriteIfNewer, destDir } = content;
     if (itemRemains.length > 0) {
-      props.mayMove(activeView, itemRemains, forced, overwriteIfNewer);
+      props.mayMove(activeView, itemRemains, forced, overwriteIfNewer, destDir);
     } else {
       _this.spinner.hide();
       _this.logView.addMessage('Finished.');

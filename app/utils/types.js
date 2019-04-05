@@ -16,6 +16,7 @@ export type ActionType = {
   isForced?: boolean,
   ifNewer?: boolean,
   ifNewerSubDirectory?: boolean,
+  destDir?: string,
 
   dstFileName?: ?string,
   isSucceeded?: boolean,
@@ -45,6 +46,7 @@ export type ContentStateType = {
   forced: boolean,
   overwriteIfNewer: boolean,
   overwriteIfNewerSubDirectory: ?boolean,
+  destDir?: ?string,
   itemRemains: Array<ItemStateType>,
   dstFileName?: ?string,
   logMessage?: ?string,

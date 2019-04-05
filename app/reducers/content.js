@@ -164,7 +164,8 @@ export default function content(
         forced: action.isForced,
         overwriteIfNewer: action.ifNewer,
         overwriteIfNewerSubDirectory: action.ifNewerSubDirectory,
-        itemRemains: action.remains
+        itemRemains: action.remains,
+        destDir: action.destDir
       };
     case CANCEL_COPY_ITEM: {
       return Object.assign({}, state, {
@@ -294,7 +295,8 @@ export default function content(
         needToConfirm: action.needToConfirm,
         forced: action.isForced,
         overwriteIfNewer: false,
-        itemRemains: action.remains
+        itemRemains: action.remains,
+        destDir: action.destDir
       };
     case CANCEL_MOVE_ITEM: {
       return Object.assign({}, state, {
