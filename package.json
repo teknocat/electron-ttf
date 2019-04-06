@@ -1,7 +1,7 @@
 {
   "name": "electron-ttf",
   "productName": "Electron TTF",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Tiny TF - Electron Edition",
   "homepage": "https://github.com/teknocat/electron-ttf",
   "author": {
@@ -39,7 +39,9 @@
     "test-e2e": "cross-env NODE_ENV=test BABEL_DISABLE_CACHE=1 node --trace-warnings -r babel-register ./internals/scripts/RunTests.js e2e",
     "test-watch": "npm test -- --watch"
   },
-  "browserslist": "electron 1.6",
+  "browserslist": [
+    "electron 1.6"
+  ],
   "lint-staged": {
     "*.js": [
       "cross-env NODE_ENV=development eslint --cache --format=node_modules/eslint-formatter-pretty",
