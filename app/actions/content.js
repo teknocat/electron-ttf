@@ -30,7 +30,10 @@ import {
   ADD_LOG_MESSAGE,
   REFRESH_DONE,
   RESET_ACTION,
-  SET_FILE_MASK
+  SET_FILE_MASK,
+  SWITCH_TO_TEXT_VIEW,
+  SWITCH_TO_DIRECTORY_VIEW,
+  TEXT_FILE_REGEXP
 } from '../utils/types';
 import { extractBodyAndExt, convertPath, anotherSideView } from '../utils/file';
 import { regexFindIndex } from '../utils/util';
@@ -476,6 +479,7 @@ export function execEnterAction(
     if (withCtrl) {
       shell.openItem(targetPath);
       dispatch(moveCursorDown(viewPosition));
+
     } else if (item.isDirectory) {
       changeDirectoryAndFetch(
         targetPath,
@@ -486,12 +490,36 @@ export function execEnterAction(
         cursorPosition
       );
     } else {
-      // TODO 内部ビューア処理
-      console.log('[NO IMPLEMENT] open internal viewer:', targetPath);
+      // 内部ビューア処理
+      // ファイルがテキストと判断されるものであれば、内部テキストビューアを起動
+      if (TEXT_FILE_REGEXP.test(item.fileName)) { // eslint-disable-line no-lonely-if
+        console.log('assumed to text file:', targetPath);
+        dispatch(switchToTextViewAction(item));
+      } else {
+        console.log('[NO IMPLEMENT] open internal viewer:', targetPath);
+      }
     }
   };
 }
 
+function switchToTextViewAction(targetItem: ItemStateType) {
+  return {
+    type: SWITCH_TO_TEXT_VIEW,
+    targetItem
+  };
+}
+
+export function switchToDirectoryView() {
+  return (dispatch: Function) => {
+    dispatch(switchToDirectoryViewAction());
+  };
+}
+
+function switchToDirectoryViewAction() {
+  return {
+    type: SWITCH_TO_DIRECTORY_VIEW
+  };
+}
 export function changeDirectoryToParent(viewPosition: string) {
   return (dispatch: (action: ActionType) => void, getState: Function) => {
     const { content } = getState();

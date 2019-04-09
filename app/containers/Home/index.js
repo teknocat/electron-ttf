@@ -9,6 +9,7 @@ import path from 'path';
 import styles from './Home.scss';
 import LogView from '../../components/LogView';
 import StatusBar from '../../components/StatusBar';
+import TextView from '../../components/TextView';
 import {
   switchActiveView,
   moveCursorUp,
@@ -49,7 +50,8 @@ import {
   reset,
   launchTerminal,
   execCommand,
-  setFileMask
+  setFileMask,
+  switchToDirectoryView
 } from '../../actions';
 import type {
   SortType,
@@ -208,7 +210,8 @@ type Props = {
     commandLine: ?string
   ) => void,
   execCommand: (viewPosition: string, commandLine: string) => void,
-  setFileMask: (viewPosition: string, pattern: string) => void
+  setFileMask: (viewPosition: string, pattern: string) => void,
+  switchToDirectoryView: () => void
 };
 
 type State = {
@@ -1021,6 +1024,11 @@ class Home extends Component<Props, State> {
     this.props.findItem(activeView, findText, searchNext);
   };
 
+  exitTextView = () => {
+    Mousetrap.unpause();
+    this.props.switchToDirectoryView();
+  };
+
   showApplicationInfo = () => {
     this.logView.addMessage(getApplicationString());
   };
@@ -1045,36 +1053,46 @@ class Home extends Component<Props, State> {
       <div>
         <div className={styles.container} data-tid="container">
           <div id="mainPanel" className={styles.mainPanel}>
+            {content.viewMode === 'TEXT' &&
+              <TextView
+                content={this.props.content}
+                exitView={this.exitTextView.bind(this)}
+              />
+            }
+            {content.viewMode === 'DIRECTORY' &&
+              /* $FlowFixMe */
+              <Content
+                viewPosition="left"
+                ref={ref => {
+                  this.contentLeft = ref ? ref.getWrappedInstance() : null;
+                }}
+                exitFindMode={this.exitFindMode.bind(this)}
+                findItem={this.findItem.bind(this)}
+                fetchItems={this.props.fetchItems}
+                content={this.props.content}
+                changeActiveView={this.props.changeActiveView}
+              />
+            }
+            {content.viewMode === 'DIRECTORY' &&
+              /* $FlowFixMe */
+              <Content
+                viewPosition="right"
+                ref={ref => {
+                  this.contentRight = ref ? ref.getWrappedInstance() : null;
+                }}
+                exitFindMode={this.exitFindMode.bind(this)}
+                findItem={this.findItem.bind(this)}
+                fetchItems={this.props.fetchItems}
+                content={this.props.content}
+                changeActiveView={this.props.changeActiveView}
+              />
+            }
             <Spinner
               showSpinner={content.showSpinner}
               stopSpinner={this.stopSpinner.bind(this)}
               ref={ref => {
                 this.spinner = ref;
               }}
-            />
-            {/* $FlowFixMe */}
-            <Content
-              viewPosition="left"
-              ref={ref => {
-                this.contentLeft = ref ? ref.getWrappedInstance() : null;
-              }}
-              exitFindMode={this.exitFindMode.bind(this)}
-              findItem={this.findItem.bind(this)}
-              fetchItems={this.props.fetchItems}
-              content={this.props.content}
-              changeActiveView={this.props.changeActiveView}
-            />
-            {/* $FlowFixMe */}
-            <Content
-              viewPosition="right"
-              ref={ref => {
-                this.contentRight = ref ? ref.getWrappedInstance() : null;
-              }}
-              exitFindMode={this.exitFindMode.bind(this)}
-              findItem={this.findItem.bind(this)}
-              fetchItems={this.props.fetchItems}
-              content={this.props.content}
-              changeActiveView={this.props.changeActiveView}
             />
             <ChangeSortTypeDialog
               ref={ref => {
@@ -1272,7 +1290,8 @@ function mapDispatchToProps(dispatch) {
     reset: bindActionCreators(reset, dispatch),
     launchTerminal: bindActionCreators(launchTerminal, dispatch),
     execCommand: bindActionCreators(execCommand, dispatch),
-    setFileMask: bindActionCreators(setFileMask, dispatch)
+    setFileMask: bindActionCreators(setFileMask, dispatch),
+    switchToDirectoryView: bindActionCreators(switchToDirectoryView, dispatch)
   };
 }
 

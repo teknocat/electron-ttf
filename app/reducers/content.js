@@ -33,6 +33,8 @@ import {
   SKIP_COPY_ITEM,
   SKIP_MOVE_ITEM,
   SET_FILE_MASK,
+  SWITCH_TO_TEXT_VIEW,
+  SWITCH_TO_DIRECTORY_VIEW
 } from '../utils/types';
 import {getInitialState} from './initialState';
 import {anotherSideView} from '../utils/file';
@@ -447,6 +449,18 @@ export default function content(
           needToRefresh: true,
         },
       });
+    case SWITCH_TO_TEXT_VIEW:
+      if (!action.targetItem) return state;
+      return {
+        ...state,
+        viewMode: "TEXT",
+        targetItem: action.targetItem,
+      };
+    case SWITCH_TO_DIRECTORY_VIEW:
+      return {
+        ...state,
+        viewMode: "DIRECTORY",
+      };
 
     default:
       return state;

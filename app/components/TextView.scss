@@ -1,0 +1,13 @@
+.textView {
+  grid-column: 1/3;
+  grid-row: 1;
+  border: 1px white solid;
+  font-size: 12px;
+  padding: 5px;
+  overflow-y: scroll;
+}
+
+.inner {
+  margin: 0;
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+}

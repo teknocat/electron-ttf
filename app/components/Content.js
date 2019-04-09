@@ -11,7 +11,7 @@ import { getMaskInfo } from '../utils/util';
 
 type Props = {
   viewPosition: string,
-  fetchItems: string => void,
+  fetchItems: (string, keepPosition?: boolean, keepMarks?: boolean) => void,
   content: ContentStateType,
   exitFindMode: () => void,
   findItem: (string, boolean) => void,
@@ -46,7 +46,7 @@ class Content extends Component<Props, State> {
 
   componentDidMount() {
     // console.log("viewPosition: ", this.props.viewPosition)
-    this.props.fetchItems(this.props.viewPosition);
+    this.props.fetchItems(this.props.viewPosition, true, true);
   }
 
   componentDidUpdate() {

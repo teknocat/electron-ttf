@@ -52,7 +52,8 @@ export type ContentStateType = {
   logMessage?: ?string,
   showSpinner?: ?boolean,
   enableCopyToFuse: boolean,
-  childProcess?: any
+  childProcess?: any,
+  viewMode: ViewType
 };
 
 export type ItemListStateType = {
@@ -123,6 +124,8 @@ export const ADD_LOG_MESSAGE = 'ADD_LOG_MESSAGE';
 export const REFRESH_DONE = 'REFRESH_DONE';
 export const RESET_ACTION = 'RESET_ACTION';
 export const SET_FILE_MASK = 'SET_FILE_MASK';
+export const SWITCH_TO_TEXT_VIEW = 'SWITCH_TO_TEXT_VIEW';
+export const SWITCH_TO_DIRECTORY_VIEW = 'SWITCH_TO_DIRECTORY_VIEW';
 
 export type SortType =
   | 'FileDescDirFirst'
@@ -164,3 +167,6 @@ export type CopyMoveType =
   | 'ChangeFileName'
   | 'Cancel';
 
+export type ViewType = 'DIRECTORY' | 'TEXT';
+
+export const TEXT_FILE_REGEXP = /\.(txt|json|md|ya?ml|xml)$/i;

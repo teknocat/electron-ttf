@@ -52,7 +52,8 @@ const content = {
   overwriteIfNewer: false,
   overwriteIfNewerSubDirectory: false,
   itemRemains: [],
-  enableCopyToFuse: false
+  enableCopyToFuse: false,
+  viewMode: 'DIRECTORY'
 };
 
 export function getInitialState() {
