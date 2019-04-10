@@ -29,13 +29,17 @@ export default class TextView extends Component<Props, State> {
 
   // $FlowFixMe
   onKeyDown(e) {
-    // console.log(e);
-    // Enter
-    if (e.keyCode === 13) {
-      this.handleCancel();
-    }
+    // console.log('keyCode=', e.keyCode);
+    if (e.keyCode === 13) this.handleCancel(); // Enter
     if (e.keyCode === 27) this.handleCancel(); // ESC
+    if (e.keyCode === 39) this.container.scrollTop += this.getPageHeight(); // RIGHT
+    if (e.keyCode === 37) this.container.scrollTop -= this.getPageHeight(); // LEFT
   }
+
+  getPageHeight = () => {
+    const style = window.getComputedStyle(this.container);
+    return this.container.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+  };
 
   handleCancel() {
     this.props.exitView();
