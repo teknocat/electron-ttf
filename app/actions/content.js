@@ -11,7 +11,8 @@ import type {
   ContentStateType,
   FindItemType,
   HistoryStateType,
-  ItemStateType
+  ItemStateType,
+  PreferenceType
 } from '../utils/types';
 import {
   MAX_FILE_INFO_TYPE,
@@ -32,8 +33,7 @@ import {
   RESET_ACTION,
   SET_FILE_MASK,
   SWITCH_TO_TEXT_VIEW,
-  SWITCH_TO_DIRECTORY_VIEW,
-  TEXT_FILE_REGEXP
+  SWITCH_TO_DIRECTORY_VIEW
 } from '../utils/types';
 import { extractBodyAndExt, convertPath, anotherSideView } from '../utils/file';
 import { regexFindIndex } from '../utils/util';
@@ -453,7 +453,8 @@ export function execEnterAction(
   viewPosition: string,
   cursorPosition: number,
   withCtrl: boolean = false,
-  parentAsCurrent: boolean = false
+  parentAsCurrent: boolean = false,
+  preferences: PreferenceType
 ) {
   return (dispatch: Function, getState: Function) => {
     const { content } = getState();
@@ -479,8 +480,10 @@ export function execEnterAction(
     if (withCtrl) {
       shell.openItem(targetPath);
       dispatch(moveCursorDown(viewPosition));
+      return;
+    }
 
-    } else if (item.isDirectory) {
+    if (item.isDirectory) {
       changeDirectoryAndFetch(
         targetPath,
         0,
@@ -489,16 +492,25 @@ export function execEnterAction(
         currentPath,
         cursorPosition
       );
-    } else {
-      // 内部ビューア処理
-      // ファイルがテキストと判断されるものであれば、内部テキストビューアを起動
-      if (TEXT_FILE_REGEXP.test(item.fileName)) { // eslint-disable-line no-lonely-if
+      return;
+    }
+
+    // 内部ビューア処理
+    // ファイルがテキストと判断されるものであれば、内部テキストビューアを起動
+    const {textFileRegexp} = preferences;
+    // console.log('textFileRegexp', textFileRegexp);
+    if (textFileRegexp) {
+      // $FlowFixMe
+      const regexp = new RegExp(String.raw`${textFileRegexp}`, 'i');
+      // console.log('regexp', regexp);
+      if (regexp.test(item.fileName)) { // eslint-disable-line no-lonely-if
         console.log('assumed to text file:', targetPath);
         dispatch(switchToTextViewAction(item));
-      } else {
-        console.log('[NO IMPLEMENT] open internal viewer:', targetPath);
+        return;
       }
     }
+
+    console.log('[NO IMPLEMENT] open internal viewer:', targetPath);
   };
 }
 

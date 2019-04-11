@@ -88,7 +88,8 @@ export type PreferenceType = {
   kbd101?: ?boolean,
   watchExcludes?: Array<string>,
   showPathOnTitleBar?: ?boolean,
-  favoritePathList?: ?Array<string>
+  favoritePathList?: ?Array<string>,
+  textFileRegexp?: ?string
 };
 
 export const SWITCH_ACTIVE_VIEW = 'SWITCH_ACTIVE_VIEW';
@@ -169,4 +170,4 @@ export type CopyMoveType =
 
 export type ViewType = 'DIRECTORY' | 'TEXT';
 
-export const TEXT_FILE_REGEXP = /\.(txt|json|md|ya?ml|xml)$/i;
+export const DEFAULT_TEXT_FILE_PATTERN = '\\.(txt|json|md|ya?ml|xml)$';

@@ -116,7 +116,8 @@ type Props = {
     viewPosition: string,
     cursorPosition: number,
     withCtrl: boolean,
-    parentAsCurrent: boolean
+    parentAsCurrent: boolean,
+    preferences: PreferenceType
   ) => void,
   changeDirectoryToParent: string => void,
   changeDirectoryToHome: string => void,
@@ -693,7 +694,8 @@ class Home extends Component<Props, State> {
         activeView,
         activeContent.position,
         false,
-        false
+        false,
+        this.state.preferences
       );
     }
 
@@ -706,7 +708,8 @@ class Home extends Component<Props, State> {
         activeView,
         activeContent.position,
         true,
-        true
+        true,
+        this.state.preferences
       );
     }
 

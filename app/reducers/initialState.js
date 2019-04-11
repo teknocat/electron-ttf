@@ -3,6 +3,7 @@ import settings from 'electron-settings';
 import os from 'os';
 import is from 'electron-is';
 import { convertPath } from '../utils/file';
+import {DEFAULT_TEXT_FILE_PATTERN} from "../utils/types";
 
 const posix = !is.windows() && process.env.NODE_ENV !== 'test' ? require('posix-ext') : null;
 
@@ -85,7 +86,8 @@ const preferences = {
   // TODO windowsで設定すべき値の検討
   watchExcludes: is.windows() ? [] : ['/dev', '/var/log'],
   showPathOnTitleBar: false,
-  favoritePathList: []
+  favoritePathList: [],
+  textFileRegexp: DEFAULT_TEXT_FILE_PATTERN,
 };
 
 export function getInitialPreferences() {

@@ -24,6 +24,7 @@ export default class PreferenceDialog extends Component<Props, State> {
   textWatchExcludes: any;
   cbShowPathOnTitleBar: any;
   textAreaFavoritePathList: any;
+  textTextFileRegexp: any;
   okButton: any;
   cancelButton: any;
 
@@ -35,6 +36,7 @@ export default class PreferenceDialog extends Component<Props, State> {
       watchExcludes: [],
       showPathOnTitleBar: false,
       favoritePathList: [],
+      textFileRegexp: null,
     },
     watchExcludesString: null,
     favoritePathListString: null
@@ -85,6 +87,9 @@ export default class PreferenceDialog extends Component<Props, State> {
       case 'preference_dialog_favoritePathList':
         this.setState({ favoritePathListString: e.target.value});
         break;
+      case 'preference_dialog_text_file_regexp':
+        preferences.textFileRegexp = e.target.value;
+        break;
       default:
         return;
     }
@@ -108,8 +113,12 @@ export default class PreferenceDialog extends Component<Props, State> {
         case 'preference_dialog_showPathOnTitleBar':
           this.textWatchExcludes.focus();
           break;
-        case 'preference_dialog_ok':
+
+        case 'preference_dialog_text_file_regexp':
           this.textAreaFavoritePathList.focus();
+          break;
+        case 'preference_dialog_ok':
+          this.textTextFileRegexp.focus();
           break;
         case 'preference_dialog_cancel':
           this.okButton.focus();
@@ -133,6 +142,10 @@ export default class PreferenceDialog extends Component<Props, State> {
         case 'preference_dialog_showPathOnTitleBar':
           this.textAreaFavoritePathList.focus();
           break;
+
+        case 'preference_dialog_text_file_regexp':
+          this.okButton.focus();
+          break;
         case 'preference_dialog_ok':
           this.cancelButton.focus();
           break;
@@ -146,9 +159,8 @@ export default class PreferenceDialog extends Component<Props, State> {
 
     // Enter
     if (e.keyCode === 13) {
-      if (e.target.id === 'preference_dialog_favoritePathList') {
-        ;
-      } else if (e.target.id === 'preference_dialog_cancel') {
+      if (e.target.id === 'preference_dialog_favoritePathList') return;
+      if (e.target.id === 'preference_dialog_cancel') {
         this.handleCancel();
       } else {
         this.handleOK();
@@ -257,6 +269,19 @@ export default class PreferenceDialog extends Component<Props, State> {
               }}
               rows="4"
               wrap="off"
+            />
+          </div>
+          <div className={styles.detailsContainer}>
+            <span className={styles.label}>テキストファイルパターン(正規表現):</span>
+            <input
+              type="text"
+              id="preference_dialog_text_file_regexp"
+              className={styles.textInput}
+              value={this.state.preferences.textFileRegexp}
+              onChange={this.handleChange.bind(this)}
+              ref={ref => {
+                this.textTextFileRegexp = ref;
+              }}
             />
           </div>
 
