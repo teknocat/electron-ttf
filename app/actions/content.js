@@ -36,7 +36,7 @@ import {
   SWITCH_TO_DIRECTORY_VIEW
 } from '../utils/types';
 import { extractBodyAndExt, convertPath, anotherSideView } from '../utils/file';
-import { regexFindIndex } from '../utils/util';
+import {getActiveContent, regexFindIndex} from '../utils/util';
 import getFindItemType from '../utils/preference';
 
 export function switchActiveView() {
@@ -449,7 +449,7 @@ export function changeDirectoryAndFetch(
   }
 }
 
-export function execEnterAction(
+export function execEnter(
   viewPosition: string,
   cursorPosition: number,
   withCtrl: boolean = false,
@@ -506,11 +506,24 @@ export function execEnterAction(
       if (regexp.test(item.fileName)) { // eslint-disable-line no-lonely-if
         console.log('assumed to text file:', targetPath);
         dispatch(switchToTextViewAction(item));
+        dispatch(moveCursorDown(viewPosition));
         return;
       }
     }
 
     console.log('[NO IMPLEMENT] open internal viewer:', targetPath);
+  };
+}
+
+export function switchToInternalView() {
+  return (dispatch: Function, getState: Function) => {
+    const { content } = getState();
+    const { activeView, activeContent } = getActiveContent(content);
+    const item: ItemStateType = content[activeView].items[activeContent.position];
+    if (item.isDirectory) return;
+
+    // TODO ファイルの中身を判定した上でビューアを切り替える必要がある
+    dispatch(switchToTextViewAction(item));
   };
 }
 

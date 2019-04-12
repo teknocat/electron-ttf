@@ -19,7 +19,7 @@ import {
   moveCursorToTop,
   moveCursorToBottom,
   moveCursorToFilePrefix,
-  execEnterAction,
+  execEnter,
   changeDirectoryToParent,
   changeDirectoryToHome,
   changeDirectoryToRoot,
@@ -51,7 +51,8 @@ import {
   launchTerminal,
   execCommand,
   setFileMask,
-  switchToDirectoryView
+  switchToDirectoryView,
+  switchToInternalView
 } from '../../actions';
 import type {
   SortType,
@@ -112,7 +113,7 @@ type Props = {
   moveCursorToTop: string => void,
   moveCursorToBottom: string => void,
   moveCursorToFilePrefix: (viewPosition: string, prefix: string) => void,
-  execEnterAction: (
+  execEnter: (
     viewPosition: string,
     cursorPosition: number,
     withCtrl: boolean,
@@ -212,7 +213,8 @@ type Props = {
   ) => void,
   execCommand: (viewPosition: string, commandLine: string) => void,
   setFileMask: (viewPosition: string, pattern: string) => void,
-  switchToDirectoryView: () => void
+  switchToDirectoryView: () => void,
+  switchToInternalView: () => void
 };
 
 type State = {
@@ -311,6 +313,7 @@ class Home extends Component<Props, State> {
     Mousetrap.bind('M', this.execKeyAction);
     Mousetrap.bind('o', this.changeDirectoryToAnother);
     Mousetrap.bind('O', this.changeAnotherViewDirectory);
+    Mousetrap.bind('v', this.switchToInternalView);
 
     Mousetrap.bind('a', this.markAllFiles);
     Mousetrap.bind('home', this.markAllFiles);
@@ -690,7 +693,7 @@ class Home extends Component<Props, State> {
     e.preventDefault();
 
     if (combo === 'enter') {
-      this.props.execEnterAction(
+      this.props.execEnter(
         activeView,
         activeContent.position,
         false,
@@ -704,7 +707,7 @@ class Home extends Component<Props, State> {
     // 以下は表示ディレクトリが有効な場合のみ
 
     if (combo === 'mod+enter') {
-      this.props.execEnterAction(
+      this.props.execEnter(
         activeView,
         activeContent.position,
         true,
@@ -1027,7 +1030,12 @@ class Home extends Component<Props, State> {
     this.props.findItem(activeView, findText, searchNext);
   };
 
-  exitTextView = () => {
+  switchToInternalView = (e) => {
+    e.preventDefault();
+    this.props.switchToInternalView();
+  };
+
+  exitInternalView = () => {
     Mousetrap.unpause();
     this.props.switchToDirectoryView();
   };
@@ -1059,7 +1067,7 @@ class Home extends Component<Props, State> {
             {content.viewMode === 'TEXT' &&
               <TextView
                 content={this.props.content}
-                exitView={this.exitTextView.bind(this)}
+                exitView={this.exitInternalView.bind(this)}
               />
             }
             {content.viewMode === 'DIRECTORY' &&
@@ -1253,7 +1261,7 @@ function mapDispatchToProps(dispatch) {
       moveCursorToFilePrefix,
       dispatch
     ),
-    execEnterAction: bindActionCreators(execEnterAction, dispatch),
+    execEnter: bindActionCreators(execEnter, dispatch),
     changeDirectoryToParent: bindActionCreators(
       changeDirectoryToParent,
       dispatch
@@ -1294,7 +1302,8 @@ function mapDispatchToProps(dispatch) {
     launchTerminal: bindActionCreators(launchTerminal, dispatch),
     execCommand: bindActionCreators(execCommand, dispatch),
     setFileMask: bindActionCreators(setFileMask, dispatch),
-    switchToDirectoryView: bindActionCreators(switchToDirectoryView, dispatch)
+    switchToDirectoryView: bindActionCreators(switchToDirectoryView, dispatch),
+    switchToInternalView: bindActionCreators(switchToInternalView, dispatch)
   };
 }
 
