@@ -33,6 +33,7 @@ import {
   RESET_ACTION,
   SET_FILE_MASK,
   SWITCH_TO_TEXT_VIEW,
+  SWITCH_TO_IMAGE_VIEW,
   SWITCH_TO_DIRECTORY_VIEW
 } from '../utils/types';
 import { extractBodyAndExt, convertPath, anotherSideView } from '../utils/file';
@@ -496,6 +497,7 @@ export function execEnter(
     }
 
     // 内部ビューア処理
+
     // ファイルがテキストと判断されるものであれば、内部テキストビューアを起動
     const {textFileRegexp} = preferences;
     // console.log('textFileRegexp', textFileRegexp);
@@ -509,6 +511,13 @@ export function execEnter(
         dispatch(moveCursorDown(viewPosition));
         return;
       }
+    }
+
+    if (/\.(jpe?g|png)/i.test(item.fileName)) {
+      console.log('assumed to image file:', targetPath);
+      dispatch(switchToImageViewAction(item));
+      dispatch(moveCursorDown(viewPosition));
+      return;
     }
 
     console.log('[NO IMPLEMENT] open internal viewer:', targetPath);
@@ -530,6 +539,13 @@ export function switchToInternalView() {
 function switchToTextViewAction(targetItem: ItemStateType) {
   return {
     type: SWITCH_TO_TEXT_VIEW,
+    targetItem
+  };
+}
+
+function switchToImageViewAction(targetItem: ItemStateType) {
+  return {
+    type: SWITCH_TO_IMAGE_VIEW,
     targetItem
   };
 }

@@ -126,6 +126,7 @@ export const REFRESH_DONE = 'REFRESH_DONE';
 export const RESET_ACTION = 'RESET_ACTION';
 export const SET_FILE_MASK = 'SET_FILE_MASK';
 export const SWITCH_TO_TEXT_VIEW = 'SWITCH_TO_TEXT_VIEW';
+export const SWITCH_TO_IMAGE_VIEW = 'SWITCH_TO_IMAGE_VIEW';
 export const SWITCH_TO_DIRECTORY_VIEW = 'SWITCH_TO_DIRECTORY_VIEW';
 
 export type SortType =
@@ -168,6 +169,6 @@ export type CopyMoveType =
   | 'ChangeFileName'
   | 'Cancel';
 
-export type ViewType = 'DIRECTORY' | 'TEXT';
+export type ViewType = 'DIRECTORY' | 'TEXT' | 'IMAGE';
 
 export const DEFAULT_TEXT_FILE_PATTERN = '\\.(txt|json|md|ya?ml|xml)$';

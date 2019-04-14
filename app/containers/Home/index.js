@@ -10,6 +10,7 @@ import styles from './Home.scss';
 import LogView from '../../components/LogView';
 import StatusBar from '../../components/StatusBar';
 import TextView from '../../components/TextView';
+import ImageView from '../../components/ImageView';
 import {
   switchActiveView,
   moveCursorUp,
@@ -1066,6 +1067,12 @@ class Home extends Component<Props, State> {
           <div id="mainPanel" className={styles.mainPanel}>
             {content.viewMode === 'TEXT' &&
               <TextView
+                content={this.props.content}
+                exitView={this.exitInternalView.bind(this)}
+              />
+            }
+            {content.viewMode === 'IMAGE' &&
+              <ImageView
                 content={this.props.content}
                 exitView={this.exitInternalView.bind(this)}
               />

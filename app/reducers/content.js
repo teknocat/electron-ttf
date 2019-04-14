@@ -34,6 +34,7 @@ import {
   SKIP_MOVE_ITEM,
   SET_FILE_MASK,
   SWITCH_TO_TEXT_VIEW,
+  SWITCH_TO_IMAGE_VIEW,
   SWITCH_TO_DIRECTORY_VIEW
 } from '../utils/types';
 import {getInitialState} from './initialState';
@@ -454,6 +455,13 @@ export default function content(
       return {
         ...state,
         viewMode: "TEXT",
+        targetItem: action.targetItem,
+      };
+    case SWITCH_TO_IMAGE_VIEW:
+      if (!action.targetItem) return state;
+      return {
+        ...state,
+        viewMode: "IMAGE",
         targetItem: action.targetItem,
       };
     case SWITCH_TO_DIRECTORY_VIEW:
