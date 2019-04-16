@@ -62,7 +62,7 @@ export default class ImageView extends Component<Props, State> {
 
   renderView(path: string, ext: string) {
     const {image, mimeType} = this.getImage(path, ext);
-    if (!image) return;
+    if (!image || !mimeType) return;
     const src = `data:${mimeType};base64,${image}`;
     return (
       <img src={src} alt={path} className={styles.inner} />
