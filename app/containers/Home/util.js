@@ -21,7 +21,8 @@ export const setupPreferences = () => {
     watchExcludes: myPrefs && myPrefs.watchExcludes ? myPrefs.watchExcludes : initPrefs.watchExcludes,
     showPathOnTitleBar: myPrefs && myPrefs.showPathOnTitleBar ? myPrefs.showPathOnTitleBar : initPrefs.showPathOnTitleBar,
     favoritePathList: myPrefs && myPrefs.favoritePathList ? myPrefs.favoritePathList : initPrefs.favoritePathList,
-    textFileRegexp: myPrefs && myPrefs.textFileRegexp ? myPrefs.textFileRegexp : initPrefs.textFileRegexp
+    textFileRegexp: myPrefs && myPrefs.textFileRegexp ? myPrefs.textFileRegexp : initPrefs.textFileRegexp,
+    textEditor: myPrefs && myPrefs.textEditor ? myPrefs.textEditor : initPrefs.textEditor,
   }
 };
 

@@ -88,6 +88,9 @@ const preferences = {
   showPathOnTitleBar: false,
   favoritePathList: [],
   textFileRegexp: DEFAULT_TEXT_FILE_PATTERN,
+  textEditor: posix
+    ? 'mousepad $P'
+    : 'notepad $P'
 };
 
 export function getInitialPreferences() {

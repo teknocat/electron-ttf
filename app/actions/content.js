@@ -527,8 +527,8 @@ export function execEnter(
 export function switchToInternalView() {
   return (dispatch: Function, getState: Function) => {
     const { content } = getState();
-    const { activeView, activeContent } = getActiveContent(content);
-    const item: ItemStateType = content[activeView].items[activeContent.position];
+    const { activeContent } = getActiveContent(content);
+    const item: ItemStateType = activeContent.items[activeContent.position];
     if (item.isDirectory) return;
 
     // TODO ファイルの中身を判定した上でビューアを切り替える必要がある
@@ -930,8 +930,13 @@ export function launchTerminal(
       // $P -> 対象のフルパス
       // TODO 他の変数にも対応
       // TODO 汎用的なロジックに
-      exec(commandLine.replace('$P', targetPath), { cwd: targetPath });
-      dispatch(moveCursorDown(viewPosition));
+      try {
+        exec(commandLine.replace('$P', targetPath), { cwd: targetPath });
+        dispatch(moveCursorDown(viewPosition));
+      } catch (err) {
+        console.log(err);
+        dispatch(addLogMessage(`Can't launch terminal: ${commandLine} : ${targetPath}`));
+      }
     }
   };
 }
@@ -939,10 +944,10 @@ export function launchTerminal(
 export function execCommand(viewPosition: string, commandLine: string) {
   return (dispatch: Function, getState: Function) => {
     const { content } = getState();
-    const currentPath =
+    const currentDir =
       convertPath(content[viewPosition].path) || content[viewPosition].path;
 
-    exec(commandLine, { cwd: currentPath });
+    exec(commandLine, { cwd: currentDir });
     dispatch(moveCursorDown(viewPosition));
   };
 }
@@ -952,5 +957,38 @@ export function setFileMask(viewPosition: string, maskPattern: string) {
     type: SET_FILE_MASK,
     viewPosition,
     maskPattern
+  };
+}
+
+export function launchTextEditor(
+  commandLine?: string
+) {
+  return (dispatch: Function, getState: Function) => {
+    if (!commandLine) return;
+    // console.log("commandLine=", commandLine);
+
+    const { content } = getState();
+    const { activeContent } = getActiveContent(content);
+    const item = activeContent.items[activeContent.position];
+    const currentDir = convertPath(activeContent.path) || activeContent.path;
+    const targetPath = path.join(currentDir, item.fileName);
+
+    // console.log("target path=", targetPath);
+    // console.log("cursorPosition=", cursorPosition);
+
+    const { stats } = item;
+    if (!stats) return;
+
+    if (!item.isDirectory) {
+      // $P -> 対象のフルパス
+      // TODO 他の変数にも対応
+      // TODO 汎用的なロジックに
+      try {
+        exec(commandLine.replace('$P', targetPath), { cwd: currentDir });
+      } catch (err) {
+        console.log(err);
+        dispatch(addLogMessage(`Can't launch text editor: ${commandLine} : ${targetPath}`));
+      }
+    }
   };
 }

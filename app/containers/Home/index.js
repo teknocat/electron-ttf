@@ -53,7 +53,8 @@ import {
   execCommand,
   setFileMask,
   switchToDirectoryView,
-  switchToInternalView
+  switchToInternalView,
+  launchTextEditor
 } from '../../actions';
 import type {
   SortType,
@@ -215,7 +216,8 @@ type Props = {
   execCommand: (viewPosition: string, commandLine: string) => void,
   setFileMask: (viewPosition: string, pattern: string) => void,
   switchToDirectoryView: () => void,
-  switchToInternalView: () => void
+  switchToInternalView: () => void,
+  launchTextEditor: (commandLine: ?string) => void
 };
 
 type State = {
@@ -315,6 +317,7 @@ class Home extends Component<Props, State> {
     Mousetrap.bind('o', this.changeDirectoryToAnother);
     Mousetrap.bind('O', this.changeAnotherViewDirectory);
     Mousetrap.bind('v', this.switchToInternalView);
+    Mousetrap.bind('e', this.launchTextEditor);
 
     Mousetrap.bind('a', this.markAllFiles);
     Mousetrap.bind('home', this.markAllFiles);
@@ -1041,6 +1044,12 @@ class Home extends Component<Props, State> {
     this.props.switchToDirectoryView();
   };
 
+  launchTextEditor = () => {
+    this.props.launchTextEditor(
+      this.state.preferences.textEditor
+    );
+  };
+
   showApplicationInfo = () => {
     this.logView.addMessage(getApplicationString());
   };
@@ -1310,7 +1319,8 @@ function mapDispatchToProps(dispatch) {
     execCommand: bindActionCreators(execCommand, dispatch),
     setFileMask: bindActionCreators(setFileMask, dispatch),
     switchToDirectoryView: bindActionCreators(switchToDirectoryView, dispatch),
-    switchToInternalView: bindActionCreators(switchToInternalView, dispatch)
+    switchToInternalView: bindActionCreators(switchToInternalView, dispatch),
+    launchTextEditor: bindActionCreators(launchTextEditor, dispatch)
   };
 }
 

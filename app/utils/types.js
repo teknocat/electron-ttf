@@ -89,7 +89,8 @@ export type PreferenceType = {
   watchExcludes?: Array<string>,
   showPathOnTitleBar?: ?boolean,
   favoritePathList?: ?Array<string>,
-  textFileRegexp?: ?string
+  textFileRegexp?: ?string,
+  textEditor?: ?string
 };
 
 export const SWITCH_ACTIVE_VIEW = 'SWITCH_ACTIVE_VIEW';
