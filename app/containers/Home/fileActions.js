@@ -1,19 +1,19 @@
 // @flow
 
 import { anotherSideView } from '../../utils/file';
-import type {ContentStateType, ItemStateType} from "../../utils/types";
+import type {ContentStateType} from "../../utils/types";
 
 const Mousetrap = require('mousetrap-pause')(require('mousetrap'));
 
 type Props = {
   content: ContentStateType,
   copyItems: (forced: boolean, overwriteIfNewer: boolean, newFileName: ?string, OverwriteIfNewerSubDirectory: ?boolean, destDir: ?string) => void,
-  mayCopy: (viewPosition: string, remains: ?Array<ItemStateType>, forced: boolean, overwriteIfNewer: boolean, enableCopyToFuse: boolean, OverwriteIfNewerSubDirectory: ?boolean, destDir?: ?string) => void,
+  mayCopy: (forced: boolean, destDir?: ?string) => void,
   fetchItems: (viewPosition: string, keepPosition?: boolean, keepMarks?: boolean) => void,
   deleteItems: (forced: boolean) => void,
-  mayDelete: (viewPosition: string, remains: ?Array<ItemStateType>, forced: boolean) => void,
+  mayDelete: (forced: boolean) => void,
   moveItems: (forced: boolean, ifNewer: boolean, newFileName: ?string, destDir: ?string) => void,
-  mayMove: (viewPosition: string, remains: ?Array<ItemStateType>, forced: boolean, ifNewer: boolean, destDir?: ?string) => void,
+  mayMove: (forced: boolean, destDir?: ?string) => void,
   reset: () => void,
   refreshDone: (viewPosition: string) => void
 };
@@ -93,9 +93,9 @@ export const doCopy = (prevProps: Props, props: Props, _this: any) => {
     }
 
     // 後続のアイテムが存在すれば続けてコピー
-    const { activeView, itemRemains, forced, overwriteIfNewer, enableCopyToFuse, overwriteIfNewerSubDirectory, destDir } = content;
+    const { activeView, itemRemains, forced, destDir } = content;
     if (itemRemains.length > 0) {
-      props.mayCopy(activeView, itemRemains, forced, overwriteIfNewer, enableCopyToFuse, overwriteIfNewerSubDirectory, destDir);
+      props.mayCopy(forced, destDir);
     } else {
       _this.spinner.hide();
       _this.logView.addMessage('Finished.');
@@ -168,7 +168,7 @@ export const doDelete = (prevProps: Props, props: Props, _this: any) => {
     // 後続のアイテムが存在すれば続けて削除
     const { activeView, itemRemains, forced } = props.content;
     if (itemRemains.length > 0) {
-      props.mayDelete(activeView, itemRemains, forced);
+      props.mayDelete(forced);
     } else {
       _this.spinner.hide();
       _this.logView.addMessage('Finished.');
@@ -245,9 +245,9 @@ export const doMove = (prevProps: Props, props: Props, _this: any) => {
     }
 
     // 後続のアイテムが存在すれば続けて移動
-    const { activeView, itemRemains, forced, overwriteIfNewer, destDir } = content;
+    const { activeView, itemRemains, forced, destDir } = content;
     if (itemRemains.length > 0) {
-      props.mayMove(activeView, itemRemains, forced, overwriteIfNewer, destDir);
+      props.mayMove(forced, destDir);
     } else {
       _this.spinner.hide();
       _this.logView.addMessage('Finished.');

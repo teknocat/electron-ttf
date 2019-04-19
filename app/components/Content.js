@@ -15,7 +15,7 @@ type Props = {
   content: ContentStateType,
   exitFindMode: () => void,
   findItem: (string, boolean) => void,
-  changeActiveView: (targetView: string, activeView: string) => void
+  changeActiveView: (targetView: string) => void
 };
 
 type State = {
@@ -171,9 +171,8 @@ class Content extends Component<Props, State> {
     this.setState({ directoryInfo });
   }
 
-  handleClick = (e, targetView, activeView) => {
-    // console.log('handle click: ', e.target, targetView, activeView);
-    this.props.changeActiveView(targetView, activeView);
+  handleClick = (e, targetView) => {
+    this.props.changeActiveView(targetView);
   };
 
   render() {
@@ -209,7 +208,7 @@ class Content extends Component<Props, State> {
           active: content.activeView === viewPosition
         })}
         role="presentation"
-        onClick={e => this.handleClick(e, viewPosition, content.activeView)}
+        onClick={e => this.handleClick(e, viewPosition)}
       >
         <div className={styles.topInfoContainer}>
           <div className={styles.pathInfo}>

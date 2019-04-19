@@ -11,6 +11,7 @@ import {
   CANCEL_DELETE_ITEM,
 } from '../utils/types';
 import { convertPath } from '../utils/file';
+import {getActiveContent} from "../utils/util";
 
 function mayDeleteAction(
   viewPosition: string,
@@ -30,14 +31,13 @@ function mayDeleteAction(
 }
 
 export function mayDelete(
-  viewPosition: string,
-  remains: ?Array<ItemStateType>,
   isForced: boolean
 ) {
   return (dispatch: (action: ActionType) => void, getState: Function) => {
     const { content } = getState();
-    const items =
-      remains || content[viewPosition].items.filter(item => item.marked);
+    const { activeView, activeContent } = getActiveContent(content);
+    const { itemRemains } = content;
+    const items = itemRemains.length > 0 ? itemRemains : activeContent.items.filter(item => item.marked);
 
     if (items.length > 0) {
       const target = items.shift();
@@ -45,7 +45,7 @@ export function mayDelete(
       // 強制削除モードでなければ確認
       const needToConfirm = !isForced;
       dispatch(
-        mayDeleteAction(viewPosition, target, items, needToConfirm, isForced)
+        mayDeleteAction(activeView, target, items, needToConfirm, isForced)
       );
     }
   };

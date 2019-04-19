@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 import is from "electron-is";
-import type { ActionType, ItemStateType } from '../utils/types';
+import type { ActionType } from '../utils/types';
 import {
   MAY_MOVE_ITEM,
   MOVING_ITEM,
@@ -37,17 +37,14 @@ function mayMoveAction(
 }
 
 export function mayMove(
-  viewPosition: string,
-  remains: ?Array<ItemStateType>,
   isForced: boolean,
-  ifNewer: boolean,
   favoritePath?: string
 ) {
   return (dispatch: (action: ActionType) => void, getState: Function) => {
     const { content } = getState();
-    const { activeView } = content;
-    const items =
-      remains || content[viewPosition].items.filter(item => item.marked);
+    const { activeView, activeContent } = getActiveContent(content);
+    const { itemRemains, overwriteIfNewer } = content;
+    const items = itemRemains.length > 0 ? itemRemains : activeContent.items.filter(item => item.marked);
 
     if (items.length > 0) {
       const target = items.shift();
@@ -60,12 +57,12 @@ export function mayMove(
         const needToConfirm = isForced ? false : fs.existsSync(destPath);
         dispatch(
           mayMoveAction(
-            viewPosition,
+            activeView,
             target,
             items,
             needToConfirm,
             isForced,
-            ifNewer,
+            overwriteIfNewer,
             favoritePath
           )
         );

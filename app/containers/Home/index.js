@@ -108,12 +108,12 @@ const { app } = remote;
 type Props = {
   content: ContentStateType,
   switchActiveView: () => void,
-  moveCursorUp: string => void,
-  moveCursorDown: string => void,
+  moveCursorUp: () => void,
+  moveCursorDown: () => void,
   moveCursorPageUp: (string, number) => void,
   moveCursorPageDown: (string, number) => void,
-  moveCursorToTop: string => void,
-  moveCursorToBottom: string => void,
+  moveCursorToTop: () => void,
+  moveCursorToBottom: () => void,
   moveCursorToFilePrefix: (viewPosition: string, prefix: string) => void,
   execEnter: (
     viewPosition: string,
@@ -122,19 +122,17 @@ type Props = {
     parentAsCurrent: boolean,
     preferences: PreferenceType
   ) => void,
-  changeDirectoryToParent: string => void,
-  changeDirectoryToHome: string => void,
-  changeDirectoryToRoot: string => void,
-  changeActiveView: (targetView: string, activeView: string) => void,
+  changeDirectoryToParent: () => void,
+  changeDirectoryToHome: () => void,
+  changeDirectoryToRoot: () => void,
+  changeActiveView: (targetView: string) => void,
   changeInfoType: (
     viewPosition: string,
     infoType: number,
     direction: string
   ) => void,
-  markOrUnmarkItem: (viewPosition: string, cursorPosition: number) => void,
+  markOrUnmarkItem: () => void,
   rangeMarkItem: (
-    viewPosition: string,
-    cursorPosition: number,
     towardAbove: boolean
   ) => void,
   copyItems: (
@@ -145,12 +143,7 @@ type Props = {
     destDir: ?string
   ) => void,
   mayCopy: (
-    activeView: string,
-    itemRemains: ?Array<ItemStateType>,
     forced: boolean,
-    overwriteIfNewer: boolean,
-    enableCopyToFuse: boolean,
-    OverwriteIfNewerSubDirectory: ?boolean,
     targetPath?: ?string
   ) => void,
   cancelCopy: boolean => void,
@@ -161,8 +154,6 @@ type Props = {
   ) => void,
   deleteItems: (forced: boolean) => void,
   mayDelete: (
-    viewPosition: string,
-    remains: ?Array<ItemStateType>,
     forced: boolean
   ) => void,
   cancelDelete: boolean => void,
@@ -173,10 +164,7 @@ type Props = {
     destDir: ?string
   ) => void,
   mayMove: (
-    viewPosition: string,
-    remains: ?Array<ItemStateType>,
     forced: boolean,
-    ifNewer: boolean,
     targetPath?: ?string
   ) => void,
   cancelMove: boolean => void,
@@ -499,15 +487,13 @@ class Home extends Component<Props, State> {
   };
 
   moveCursorUp = e => {
-    const { activeView } = this.props.content;
     e.preventDefault();
-    this.props.moveCursorUp(activeView);
+    this.props.moveCursorUp();
   };
 
   moveCursorDown = e => {
-    const { activeView } = this.props.content;
     e.preventDefault();
-    this.props.moveCursorDown(activeView);
+    this.props.moveCursorDown();
   };
 
   moveCursorPageUp = e => {
@@ -527,27 +513,25 @@ class Home extends Component<Props, State> {
   };
 
   moveCursorToTop = e => {
-    const { activeView } = this.props.content;
     e.preventDefault();
-    this.props.moveCursorToTop(activeView);
+    this.props.moveCursorToTop();
   };
 
   moveCursorToBottom = e => {
-    const { activeView } = this.props.content;
     e.preventDefault();
-    this.props.moveCursorToBottom(activeView);
+    this.props.moveCursorToBottom();
   };
 
   changeDirectoryToParent = () => {
-    this.props.changeDirectoryToParent(this.props.content.activeView);
+    this.props.changeDirectoryToParent();
   };
 
   changeDirectoryToHome = () => {
-    this.props.changeDirectoryToHome(this.props.content.activeView);
+    this.props.changeDirectoryToHome();
   };
 
   changeDirectoryToRoot = () => {
-    this.props.changeDirectoryToRoot(this.props.content.activeView);
+    this.props.changeDirectoryToRoot();
   };
 
   reloadAllItems = (e, combo) => {
@@ -562,13 +546,11 @@ class Home extends Component<Props, State> {
   };
 
   execLeftAction = () => {
-    const { activeView } = this.props.content;
-    this.props.changeActiveView('left', activeView);
+    this.props.changeActiveView('left');
   };
 
   execRightAction = () => {
-    const { activeView } = this.props.content;
-    this.props.changeActiveView('right', activeView);
+    this.props.changeActiveView('right');
   };
 
   changeInfoType = () => {
@@ -577,32 +559,19 @@ class Home extends Component<Props, State> {
   };
 
   markOrUnmarkItem = e => {
-    const { activeView, activeContent } = getActiveContent(this.props.content);
     e.preventDefault();
-    this.props.markOrUnmarkItem(activeView, activeContent.position);
+    this.props.markOrUnmarkItem();
   };
 
   rangeMarkItem = (e, combo) => {
-    const { activeView, activeContent } = getActiveContent(this.props.content);
-    this.props.rangeMarkItem(
-      activeView,
-      activeContent.position,
-      combo === 'mod+space'
-    );
+    this.props.rangeMarkItem(combo === 'mod+space');
   };
 
   copyItems = () => {
-    const { activeView, activeContent } = getActiveContent(this.props.content);
+    const { activeContent } = getActiveContent(this.props.content);
     // コピーすべきデータがある場合のみ実行
     if (activeContent.items.filter(item => item.marked).length > 0) {
-      this.props.mayCopy(
-        activeView,
-        null,
-        false,
-        this.props.content.overwriteIfNewer,
-        this.props.content.enableCopyToFuse,
-        this.props.content.overwriteIfNewerSubDirectory
-      );
+      this.props.mayCopy(false);
     }
   };
 
@@ -620,43 +589,30 @@ class Home extends Component<Props, State> {
     Mousetrap.unpause();
     if (submit) {
       // 指定ディレクトリへのコピー実施
-      const { activeView, activeContent } = getActiveContent(this.props.content);
+      const { activeContent } = getActiveContent(this.props.content);
       // コピーすべきデータがある場合のみ実行
       if (activeContent.items.filter(item => item.marked).length > 0) {
         // 指定ディレクトリへの移動
         console.log('Copying to the directory:', value);
         this.logView.addMessage(`Copying to the directory: ${value}`);
-        this.props.mayCopy(
-          activeView,
-          null,
-          false,
-          this.props.content.overwriteIfNewer,
-          this.props.content.enableCopyToFuse,
-          this.props.content.overwriteIfNewerSubDirectory,
-          value
-        );
+        this.props.mayCopy(false, value);
       }
     }
   };
 
   deleteItems = () => {
-    const { activeView, activeContent } = getActiveContent(this.props.content);
+    const { activeContent } = getActiveContent(this.props.content);
     // 削除すべきデータがある場合のみ実行
     if (activeContent.items.filter(item => item.marked).length > 0) {
-      this.props.mayDelete(activeView, null, false);
+      this.props.mayDelete(false);
     }
   };
 
   moveItems = () => {
-    const { activeView, activeContent } = getActiveContent(this.props.content);
+    const {activeContent } = getActiveContent(this.props.content);
     // 移動すべきデータがある場合のみ実行
     if (activeContent.items.filter(item => item.marked).length > 0) {
-      this.props.mayMove(
-        activeView,
-        null,
-        false,
-        this.props.content.overwriteIfNewer
-      );
+      this.props.mayMove(false);
     }
   };
 
@@ -674,19 +630,13 @@ class Home extends Component<Props, State> {
     Mousetrap.unpause();
     if (submit) {
       // 指定ディレクトリへの移動実施
-      const { activeView, activeContent } = getActiveContent(this.props.content);
+      const { activeContent } = getActiveContent(this.props.content);
       // 移動すべきデータがある場合のみ実行
       if (activeContent.items.filter(item => item.marked).length > 0) {
         // 指定ディレクトリへの移動
         console.log('Moving to the directory:', value);
         this.logView.addMessage(`Moving to the directory: ${value}`);
-        this.props.mayMove(
-          activeView,
-          null,
-          false,
-          this.props.content.overwriteIfNewer,
-          value
-        );
+        this.props.mayMove(false, value);
       }
     }
   };

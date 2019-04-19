@@ -53,11 +53,12 @@ function moveCursorUpAction(viewPosition: string) {
   };
 }
 
-export function moveCursorUp(viewPosition: string) {
+export function moveCursorUp() {
   return (dispatch: (action: ActionType) => void, getState: Function) => {
     const { content } = getState();
-    if (content[viewPosition].position > 0) {
-      dispatch(moveCursorUpAction(viewPosition));
+    const { activeView, activeContent } = getActiveContent(content);
+    if (activeContent.position > 0) {
+      dispatch(moveCursorUpAction(activeView));
     }
   };
 }
@@ -69,29 +70,30 @@ function moveCursorDownAction(viewPosition: string) {
   };
 }
 
-export function moveCursorDown(viewPosition: string) {
+export function moveCursorDown() {
   return (dispatch: Function, getState: Function) => {
     const { content }: { content: ContentStateType } = getState();
-    if (
-      content[viewPosition].position <
-      content[viewPosition].items.length - 1
-    ) {
-      dispatch(moveCursorDownAction(viewPosition));
+    const { activeView, activeContent } = getActiveContent(content);
+    if (activeContent.position < activeContent.items.length - 1) {
+      dispatch(moveCursorDownAction(activeView));
     }
   };
 }
 
-export function moveCursorToTop(viewPosition: string) {
-  return (dispatch: (action: ActionType) => void) => {
-    dispatch(moveCursorAction(viewPosition, 0));
+export function moveCursorToTop() {
+  return (dispatch: (action: ActionType) => void, getState: Function) => {
+    const { content }: { content: ContentStateType } = getState();
+    const { activeView } = getActiveContent(content);
+    dispatch(moveCursorAction(activeView, 0));
   };
 }
 
-export function moveCursorToBottom(viewPosition: string) {
+export function moveCursorToBottom() {
   return (dispatch: (action: ActionType) => void, getState: Function) => {
-    const { content } = getState();
+    const { content }: { content: ContentStateType } = getState();
+    const { activeView, activeContent } = getActiveContent(content);
     dispatch(
-      moveCursorAction(viewPosition, content[viewPosition].items.length - 1)
+      moveCursorAction(activeView, activeContent.items.length - 1)
     );
   };
 }
@@ -480,7 +482,7 @@ export function execEnter(
 
     if (withCtrl) {
       shell.openItem(targetPath);
-      dispatch(moveCursorDown(viewPosition));
+      dispatch(moveCursorDown());
       return;
     }
 
@@ -508,7 +510,7 @@ export function execEnter(
       if (regexp.test(item.fileName)) { // eslint-disable-line no-lonely-if
         console.log('assumed to text file:', targetPath);
         dispatch(switchToTextViewAction(item));
-        dispatch(moveCursorDown(viewPosition));
+        dispatch(moveCursorDown());
         return;
       }
     }
@@ -516,7 +518,7 @@ export function execEnter(
     if (/\.(jpe?g|png)/i.test(item.fileName)) {
       console.log('assumed to image file:', targetPath);
       dispatch(switchToImageViewAction(item));
-      dispatch(moveCursorDown(viewPosition));
+      dispatch(moveCursorDown());
       return;
     }
 
@@ -561,58 +563,61 @@ function switchToDirectoryViewAction() {
     type: SWITCH_TO_DIRECTORY_VIEW
   };
 }
-export function changeDirectoryToParent(viewPosition: string) {
+export function changeDirectoryToParent() {
   return (dispatch: (action: ActionType) => void, getState: Function) => {
     const { content } = getState();
+    const { activeView, activeContent } = getActiveContent(content);
     const currentPath =
-      convertPath(content[viewPosition].path) || content[viewPosition].path;
+      convertPath(activeContent.path) || activeContent.path;
     const targetPath = path.join(currentPath, '..');
     // 履歴から探して見つかれば、そこのlastPositionをセット
-    const entry: ?HistoryStateType = content[viewPosition].histories.find(
+    const entry: ?HistoryStateType = activeContent.histories.find(
       history => history.path === targetPath
     );
     changeDirectoryAndFetch(
       targetPath,
       entry ? entry.lastPosition : 0,
       dispatch,
-      viewPosition,
+      activeView,
       currentPath,
-      content[viewPosition].position
+      activeContent.position
     );
   };
 }
 
-export function changeDirectoryToHome(viewPosition: string) {
+export function changeDirectoryToHome() {
   return (dispatch: (action: ActionType) => void, getState: Function) => {
     const { content } = getState();
+    const { activeView, activeContent } = getActiveContent(content);
     const currentPath =
-      convertPath(content[viewPosition].path) || content[viewPosition].path;
+      convertPath(activeContent.path) || activeContent.path;
     const targetPath = os.homedir();
     changeDirectoryAndFetch(
       targetPath,
       0,
       dispatch,
-      viewPosition,
+      activeView,
       currentPath,
-      content[viewPosition].position
+      activeContent.position
     );
   };
 }
 
-export function changeDirectoryToRoot(viewPosition: string) {
+export function changeDirectoryToRoot() {
   return (dispatch: (action: ActionType) => void, getState: Function) => {
     const { content } = getState();
+    const { activeView, activeContent } = getActiveContent(content);
     const currentPath =
-      convertPath(content[viewPosition].path) || content[viewPosition].path;
+      convertPath(activeContent.path) || activeContent.path;
     try {
       const { root } = path.parse(currentPath);
       changeDirectoryAndFetch(
         root,
         0,
         dispatch,
-        viewPosition,
+        activeView,
         currentPath,
-        content[viewPosition].position
+        activeContent.position
       );
     } catch (err) {
       console.error(err);
@@ -620,8 +625,10 @@ export function changeDirectoryToRoot(viewPosition: string) {
   };
 }
 
-export function changeActiveView(targetView: string, activeView: string) {
-  return (dispatch: (action: ActionType) => void) => {
+export function changeActiveView(targetView: string) {
+  return (dispatch: (action: ActionType) => void, getState: Function) => {
+    const { content } = getState();
+    const { activeView } = getActiveContent(content);
     if (targetView !== activeView) {
       dispatch(switchActiveView());
     }
@@ -721,15 +728,17 @@ function markItem(viewPosition, row, mark) {
   };
 }
 
-export function markOrUnmarkItem(viewPosition: string, cursorPosition: number) {
+export function markOrUnmarkItem() {
   return (dispatch: Function, getState: Function) => {
     const { content } = getState();
-    const item = content[viewPosition].items[cursorPosition];
+    const { activeView, activeContent } = getActiveContent(content);
+    const cursorPosition = activeContent.position;
+    const item = activeContent.items[cursorPosition];
 
     // .. にはマークを付けない。それ以外はマークの反転
     const mark = item.fileName === '..' ? false : !item.marked;
-    dispatch(markItem(viewPosition, cursorPosition, mark));
-    dispatch(moveCursorDown(viewPosition));
+    dispatch(markItem(activeView, cursorPosition, mark));
+    dispatch(moveCursorDown());
   };
 }
 
@@ -748,13 +757,13 @@ function rangeMarkItemAction(
 // 上（もしくは下）にマークされたアイテムがなければ何もしない
 // カーソル位置がマーク済の場合は何もしない
 export function rangeMarkItem(
-  viewPosition: string,
-  cursorPosition: number,
   towardAbove: boolean = false
 ) {
   return (dispatch: (action: ActionType) => void, getState: Function) => {
     const { content } = getState();
-    const current = content[viewPosition].items[cursorPosition];
+    const { activeView, activeContent } = getActiveContent(content);
+    const cursorPosition = activeContent.position;
+    const current = activeContent.items[cursorPosition];
     if (current.marked) {
       return;
     }
@@ -763,7 +772,7 @@ export function rangeMarkItem(
     if (towardAbove) {
       // カーソルの上にある最も近いマークを探す
       let nearestIndex = -1;
-      content[viewPosition].items
+      activeContent.items
         .slice(0, cursorPosition)
         .forEach((item, index) => {
           if (item.marked) {
@@ -776,12 +785,12 @@ export function rangeMarkItem(
       }
 
       for (let i = nearestIndex + 1; i <= cursorPosition; i += 1) {
-        content[viewPosition].items[i].marked = true;
+        activeContent.items[i].marked = true;
       }
     } else {
       // カーソルの下にある最も近いマークを探す
       const nearestIndex =
-        content[viewPosition].items
+        activeContent.items
           .slice(cursorPosition + 1)
           .findIndex(item => item.marked) +
         cursorPosition +
@@ -792,11 +801,11 @@ export function rangeMarkItem(
       }
 
       for (let i = cursorPosition; i < nearestIndex; i += 1) {
-        content[viewPosition].items[i].marked = true;
+        activeContent.items[i].marked = true;
       }
     }
 
-    dispatch(rangeMarkItemAction(viewPosition, content[viewPosition].items));
+    dispatch(rangeMarkItemAction(activeView, activeContent.items));
   };
 }
 
@@ -932,7 +941,7 @@ export function launchTerminal(
       // TODO 汎用的なロジックに
       try {
         exec(commandLine.replace('$P', targetPath), { cwd: targetPath });
-        dispatch(moveCursorDown(viewPosition));
+        dispatch(moveCursorDown());
       } catch (err) {
         console.log(err);
         dispatch(addLogMessage(`Can't launch terminal: ${commandLine} : ${targetPath}`));
@@ -948,7 +957,7 @@ export function execCommand(viewPosition: string, commandLine: string) {
       convertPath(content[viewPosition].path) || content[viewPosition].path;
 
     exec(commandLine, { cwd: currentDir });
-    dispatch(moveCursorDown(viewPosition));
+    dispatch(moveCursorDown());
   };
 }
 
