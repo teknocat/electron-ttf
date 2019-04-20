@@ -1,6 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import fs from 'fs';
+import Encoding from 'encoding-japanese';
 import styles from './TextView.scss';
 import type {ContentStateType} from "../utils/types";
 import {convertPath} from '../utils/file';
@@ -49,7 +50,17 @@ export default class TextView extends Component<Props, State> {
   getText = (path: string) => {
     let data = '';
     try {
-      data = fs.readFileSync(path, 'utf8');
+      const buffer = fs.readFileSync(path);
+      const detected = Encoding.detect(buffer);
+      console.log('detected', detected);
+      if (['UTF8', 'SJIS', 'EUCJP', 'JIS', 'ASCII'].indexOf(detected) >= 0) {
+        data = Encoding.convert(buffer, {from: detected, to: 'UNICODE', type: 'string'});
+      } else if (['BINARY', 'UTF32'].indexOf(detected) >= 0) {
+        // テキスト表示出来ないもの
+        data = path;
+      } else {
+        data = buffer;
+      }
     } catch (e) {
       console.error(e);
     }
