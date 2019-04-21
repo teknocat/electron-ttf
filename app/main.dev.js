@@ -15,6 +15,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import parseArgs from 'electron-args';
 
 let mainWindow = null;
+let splash;
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -101,6 +102,20 @@ app.on('ready', async () => {
     height: 728
   });
 
+  splash = new BrowserWindow({
+    show: false,
+    width: 250,
+    height: 100,
+    transparent: true,
+    frame: false,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+  });
+  splash.loadURL(`file://${__dirname}/splash.html`);
+  splash.webContents.on('did-finish-load', () => {
+    splash.show();
+  });
+
   mainWindow.loadURL(`file://${__dirname}/app.html`);
 
   // @TODO: Use 'ready-to-show' event
@@ -141,4 +156,8 @@ ipcMain.on('closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+ipcMain.on('app-ready', () => {
+  splash.destroy();
 });

@@ -351,6 +351,7 @@ class Home extends Component<Props, State> {
     this.showApplicationInfo();
 
     this.showReady();
+    ipcRenderer.send('app-ready');
 
     // XXX for test
     // this.spinner.show();
