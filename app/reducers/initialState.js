@@ -4,6 +4,7 @@ import os from 'os';
 import is from 'electron-is';
 import { convertPath } from '../utils/file';
 import {DEFAULT_TEXT_FILE_PATTERN} from "../utils/types";
+import type {ContentStateType} from "../utils/types";
 
 const posix = !is.windows() && process.env.NODE_ENV !== 'test' ? require('posix-ext') : null;
 
@@ -12,7 +13,7 @@ if (process.env.NODE_ENV === 'test') {
   settings.setPath('test.json');
 }
 
-const content = {
+const content: ContentStateType = {
   activeView: settings.get('electronTTF.content.activeView', 'left'),
   left: {
     position: 0,
@@ -26,7 +27,11 @@ const content = {
     histories: [],
     isInvalidPath: false,
     needToRefresh: false,
-    maskPattern: '*'
+    maskPattern: '*',
+    isVirtualFolder: false,
+    virtualFolderTarget: null,
+    virtualPath: null,
+    virtualFolderEntries: []
   },
   right: {
     position: 0,
@@ -40,7 +45,11 @@ const content = {
     histories: [],
     isInvalidPath: false,
     needToRefresh: false,
-    maskPattern: '*'
+    maskPattern: '*',
+    isVirtualFolder: false,
+    virtualFolderTarget: null,
+    virtualPath: null,
+    virtualFolderEntries: []
   },
   fileAction: 'NONE',
   targetItem: null,

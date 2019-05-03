@@ -29,7 +29,10 @@ export type ActionType = {
   currentPath?: string,
   currentPosition?: number,
   maskPattern?: string,
-  childProcess?: any
+  childProcess?: any,
+
+  virtualFolderTarget?: ItemStateType,
+  virtualFolderEntries?: Array<VirtualFolderEntryType>
 };
 
 export type ContentStateType = {
@@ -65,7 +68,12 @@ export type ItemListStateType = {
   histories: Array<HistoryStateType>,
   isInvalidPath: boolean,
   needToRefresh: boolean,
-  maskPattern: string
+  maskPattern: string,
+
+  isVirtualFolder: boolean,
+  virtualFolderTarget: ?ItemStateType,
+  virtualPath: ?string,
+  virtualFolderEntries: Array<VirtualFolderEntryType>
 };
 
 export type ItemStateType = {
@@ -91,6 +99,13 @@ export type PreferenceType = {
   favoritePathList?: ?Array<string>,
   textFileRegexp?: ?string,
   textEditor?: ?string
+};
+
+export type VirtualFolderEntryType = {
+  parent: string,
+  entry: string,
+  isDirectory: boolean,
+  zipEntry: any
 };
 
 export const SWITCH_ACTIVE_VIEW = 'SWITCH_ACTIVE_VIEW';
@@ -129,6 +144,7 @@ export const SET_FILE_MASK = 'SET_FILE_MASK';
 export const SWITCH_TO_TEXT_VIEW = 'SWITCH_TO_TEXT_VIEW';
 export const SWITCH_TO_IMAGE_VIEW = 'SWITCH_TO_IMAGE_VIEW';
 export const SWITCH_TO_DIRECTORY_VIEW = 'SWITCH_TO_DIRECTORY_VIEW';
+export const CHANGE_VIRTUAL_FOLDER = 'CHANGE_VIRTUAL_FOLDER';
 
 export type SortType =
   | 'FileDescDirFirst'

@@ -5,6 +5,8 @@ import { shell } from 'electron';
 import os from 'os';
 import { exec } from 'child_process';
 import glob from 'glob';
+import AdmZip from 'adm-zip';
+import tmp from 'tmp';
 import type {
   SortType,
   ActionType,
@@ -12,7 +14,7 @@ import type {
   FindItemType,
   HistoryStateType,
   ItemStateType,
-  PreferenceType
+  PreferenceType, VirtualFolderEntryType
 } from '../utils/types';
 import {
   MAX_FILE_INFO_TYPE,
@@ -34,7 +36,8 @@ import {
   SET_FILE_MASK,
   SWITCH_TO_TEXT_VIEW,
   SWITCH_TO_IMAGE_VIEW,
-  SWITCH_TO_DIRECTORY_VIEW
+  SWITCH_TO_DIRECTORY_VIEW,
+  CHANGE_VIRTUAL_FOLDER
 } from '../utils/types';
 import { extractBodyAndExt, convertPath, anotherSideView } from '../utils/file';
 import {getActiveContent, regexFindIndex} from '../utils/util';
@@ -461,6 +464,9 @@ export function execEnter(
 ) {
   return (dispatch: Function, getState: Function) => {
     const { content } = getState();
+
+    // TODO 仮想フォルダモードの場合は下に行かず、別ロジックに入る
+
     const item = content[viewPosition].items[cursorPosition];
     const currentPath =
       convertPath(content[viewPosition].path) || content[viewPosition].path;
@@ -515,14 +521,137 @@ export function execEnter(
       }
     }
 
-    if (/\.(jpe?g|png)/i.test(item.fileName)) {
+    // 画像ビューア
+    if (/\.(jpe?g|png)$/i.test(item.fileName)) {
       console.log('assumed to image file:', targetPath);
       dispatch(switchToImageViewAction(item));
       dispatch(moveCursorDown());
       return;
     }
 
+    // 仮想フォルダ
+    if (/\.zip$/i.test(item.fileName)) {
+      console.log('assumed to archive file:', targetPath);
+      // TODO メモリ上ではなく、テンポラリディレクトリに展開する
+      // TODO 展開すると日付情報が失われるので、単純にはいかない。実際にはコマンド使うことになるか？Windowsどうする
+      // TODO 上記を考えると表示はメモリ上で行い、解凍の際、エントリ毎に情報を復元するようなロジックになるか
+      let tmpObj;
+      try {
+        const zip = new AdmZip(targetPath);
+
+        tmpObj = tmp.dirSync({ prefix: 'ettf-vf-' });
+        const virtualFolderRoot = tmpObj.name;
+        console.log('virtualFolderRoot: ', virtualFolderRoot);
+        zip.extractAllTo(virtualFolderRoot, true);
+
+        // TODO 実際は仮想フォルダ情報を付与する必要があるので違うメソッドになる
+        changeDirectoryAndFetch(
+          virtualFolderRoot,
+          0,
+          dispatch,
+          viewPosition,
+          content[viewPosition].path,
+          content[viewPosition].position
+        );
+
+        // const items: Array<ItemStateType> = [];
+        // const vdEntries: Array<VirtualFolderEntryType> = [];
+        // zip.getEntries().forEach((zipEntry) => {
+        //   const pathParts = zipEntry.entryName.split('/');
+        //   let parent = '';
+        //   let entry;
+        //   const {isDirectory} = zipEntry;
+        //   if (isDirectory) {
+        //     if (pathParts.length > 2) {
+        //       parent = pathParts.slice(0, pathParts.length - 2).join('/');
+        //     }
+        //     entry = pathParts[pathParts.length - 2];
+        //   } else {
+        //     if (pathParts.length > 1) {
+        //       parent = pathParts.slice(0, pathParts.length - 1).join('/');
+        //     }
+        //     entry = pathParts[pathParts.length - 1];
+        //   }
+        //   const vdEntry: VirtualFolderEntryType = {
+        //     parent,
+        //     entry,
+        //     isDirectory,
+        //     zipEntry
+        //   };
+        //   console.log(vdEntry);
+        //   vdEntries.push(vdEntry);
+        //
+        //   // 初期表示用
+        //   if (vdEntry.parent === '') {
+        //     items.push({
+        //       fileName: vdEntry.entry,
+        //       fileBody: vdEntry.entry,
+        //       fileExt: '',
+        //       stats: null,
+        //       marked: false,
+        //       isDirectory: vdEntry.isDirectory,
+        //       isSymbolicLink: false
+        //     });
+        //   }
+        // });
+        // // TODO 仮想フォルダ内パス表示
+        // // TODO 仮想フォルダ構造をオブジェクト化して content に持たせる
+        // dispatch(
+        //   changeVirtualFolder(
+        //     item,
+        //     vdEntries,
+        //     viewPosition,
+        //     '',
+        //     0
+        //   )
+        // );
+        // dispatch(retrieveFileList(viewPosition, items, 0, true));
+      } catch (e) {
+        console.error(e);
+        if (!tmpObj) tmpObj.removeCallback();
+        dispatch(addLogMessage(`Can't open archive file: ${targetPath}`));
+      }
+      return;
+    }
+
     console.log('[NO IMPLEMENT] open internal viewer:', targetPath);
+  };
+}
+
+export function changeVirtualFolderAction(
+  virtualFolderTarget: ItemStateType,
+  virtualFolderEntries: Array<VirtualFolderEntryType>,
+  viewPosition: string,
+  target: string,
+  targetPosition: number
+) {
+  return {
+    type: CHANGE_VIRTUAL_FOLDER,
+    virtualFolderTarget,
+    virtualFolderEntries,
+    viewPosition,
+    path: target,
+    cursorPosition: targetPosition
+  };
+}
+
+export function changeVirtualFolder(
+  virtualFolderTarget: ItemStateType,
+  virtualFolderEntries: Array<VirtualFolderEntryType>,
+  viewPosition: string,
+  targetPath: string,
+  targetPosition: number
+) {
+  return (dispatch: (action: ActionType) => void) => {
+    dispatch(
+      changeVirtualFolderAction(
+        virtualFolderTarget,
+        virtualFolderEntries,
+        viewPosition,
+        targetPath,
+        targetPosition
+      )
+    );
   };
 }
 
