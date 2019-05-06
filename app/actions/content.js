@@ -5,6 +5,7 @@ import { shell } from 'electron';
 import os from 'os';
 import { exec } from 'child_process';
 import glob from 'glob';
+import AdmZip from 'adm-zip';
 import type {
   SortType,
   ActionType,
@@ -12,7 +13,9 @@ import type {
   FindItemType,
   HistoryStateType,
   ItemStateType,
-  PreferenceType
+  PreferenceType,
+  VirtualFolderEntryType,
+  ItemListStateType
 } from '../utils/types';
 import {
   MAX_FILE_INFO_TYPE,
@@ -34,7 +37,8 @@ import {
   SET_FILE_MASK,
   SWITCH_TO_TEXT_VIEW,
   SWITCH_TO_IMAGE_VIEW,
-  SWITCH_TO_DIRECTORY_VIEW
+  SWITCH_TO_DIRECTORY_VIEW,
+  CHANGE_VIRTUAL_FOLDER
 } from '../utils/types';
 import { extractBodyAndExt, convertPath, anotherSideView } from '../utils/file';
 import {getActiveContent, regexFindIndex} from '../utils/util';
@@ -368,7 +372,7 @@ export function changeDirectoryAction(
   viewPosition: string,
   target: string,
   targetPosition: number,
-  currentPath: string,
+  currentPath: ?string,
   currentPosition: number
 ) {
   return {
@@ -385,7 +389,7 @@ export function changeDirectory(
   viewPosition: string,
   targetPath: string,
   targetPosition: number,
-  currentPath: string,
+  currentPath: ?string,
   currentPosition: number = 0
 ) {
   return (dispatch: (action: ActionType) => void) => {
@@ -414,7 +418,7 @@ export function changeDirectoryAndFetch(
   targetPosition: number,
   dispatch: Function,
   viewPosition: string,
-  currentPath: string,
+  currentPath: ?string,
   currentPosition: number = 0
 ) {
   try {
@@ -452,6 +456,111 @@ export function changeDirectoryAndFetch(
   }
 }
 
+function changeVirtualFolderAndFetch(
+  activeContent,
+  cursorPosition,
+  dispatch,
+  viewPosition,
+  moveToParent = false
+) {
+  console.log('activeContent:', activeContent);
+  const currentPath = activeContent.virtualPath;
+  console.log('currentPath:', currentPath);
+  const currentVFEntry = activeContent.virtualFolderEntry;
+  console.log('currentVFEntry:', currentVFEntry);
+
+  const item = activeContent.items[cursorPosition];
+  console.log('item:', item);
+  let targetPath;
+  let targetVFEntry: ?VirtualFolderEntryType;
+  if (moveToParent || item.fileName === '..') {
+    if (currentVFEntry == null) {
+      // 仮想フォルダモードを抜ける
+      changeDirectoryAndFetch(
+        activeContent.path,
+        0,
+        dispatch,
+        viewPosition,
+        null,
+        0
+      );
+      return;
+    }
+    targetPath = currentVFEntry.parent;
+    console.log("target path:", targetPath);
+    if (targetPath === '') {
+      targetVFEntry = null;
+    } else {
+      const pathParts = targetPath.split('/');
+      const parent = pathParts.slice(0, -1).join('/');
+      const entry = pathParts.slice(-1)[0];
+      console.log('parent:', parent);
+      console.log('entry:', entry);
+      targetVFEntry = activeContent.virtualFolderEntries
+        .find(x => x.parent === parent && x.entry === entry);
+    }
+  } else {
+    if (currentVFEntry == null) {
+      targetPath = item.fileName;
+    } else {
+      targetPath = `${currentPath}/${item.fileName}`;
+    }
+    console.log("target path:", targetPath);
+    targetVFEntry = activeContent.virtualFolderEntries
+      .find(x => x.parent === currentPath && x.entry === item.fileName);
+  }
+  console.log("targetVFEntry:", targetVFEntry);
+
+  // ディレクトリならディレクトリ内のリストを取得
+  if (targetVFEntry == null || targetVFEntry.isDirectory) {
+    const items: Array<ItemStateType> = [];
+
+    // ルートディレクトリでなければ親へのエントリを追加
+    if (targetPath !== '') {
+      items.push({
+        fileName: '..',
+        fileBody: '..',
+        fileExt: '',
+        stats: null,
+        marked: false,
+        isDirectory: true,
+        isSymbolicLink: false
+      });
+    }
+
+    activeContent.virtualFolderEntries.forEach(x => {
+      if (x.parent === targetPath) {
+        items.push({
+          fileName: x.entry,
+          fileBody: x.entry,
+          fileExt: '',
+          stats: {
+            vf: {
+              fileDate: x.zipEntry.header.time,
+              fileSize: x.zipEntry.header.size,
+            },
+          },
+          marked: false,
+          isDirectory: x.isDirectory,
+          isSymbolicLink: false,
+        });
+      }
+    });
+
+    dispatch(
+      changeVirtualFolder(
+        activeContent.virtualFolderTarget,
+        activeContent.virtualFolderEntries,
+        viewPosition,
+        targetPath,
+        0,
+        targetVFEntry
+      )
+    );
+    dispatch(retrieveFileList(viewPosition, items, 0, false));
+  }
+}
+
 export function execEnter(
   viewPosition: string,
   cursorPosition: number,
@@ -461,9 +570,23 @@ export function execEnter(
 ) {
   return (dispatch: Function, getState: Function) => {
     const { content } = getState();
-    const item = content[viewPosition].items[cursorPosition];
+    const activeContent: ItemListStateType = content[viewPosition];
+
+    // 仮想フォルダモード
+    if (activeContent.isVirtualFolder) {
+      changeVirtualFolderAndFetch(
+        activeContent,
+        cursorPosition,
+        dispatch,
+        viewPosition,
+        false
+      );
+      return;
+    }
+
+    const item = activeContent.items[cursorPosition];
     const currentPath =
-      convertPath(content[viewPosition].path) || content[viewPosition].path;
+      convertPath(activeContent.path) || activeContent.path;
     // parentAsCurrent が有効なら .. はカレントディレクトリとして扱う
     const targetPath = path.join(
       currentPath,
@@ -515,14 +638,128 @@ export function execEnter(
       }
     }
 
-    if (/\.(jpe?g|png)/i.test(item.fileName)) {
+    // 画像ビューア
+    if (/\.(jpe?g|png)$/i.test(item.fileName)) {
       console.log('assumed to image file:', targetPath);
       dispatch(switchToImageViewAction(item));
       dispatch(moveCursorDown());
       return;
     }
 
+    // 仮想フォルダ
+    if (/\.zip$/i.test(item.fileName)) {
+      console.log('assumed to archive file:', targetPath);
+      try {
+        const zip = new AdmZip(targetPath);
+        const items: Array<ItemStateType> = [];
+        const vfEntries: Array<VirtualFolderEntryType> = [];
+        zip.getEntries().forEach((zipEntry) => {
+          // console.log('zipEntry.toString()', zipEntry.toString());
+          console.log('zipEntry.header', zipEntry.header);
+          const pathParts = zipEntry.entryName.split('/');
+          let parent = '';
+          let entry;
+          const {isDirectory} = zipEntry;
+          if (isDirectory) {
+            if (pathParts.length > 2) {
+              parent = pathParts.slice(0, pathParts.length - 2).join('/');
+            }
+            entry = pathParts[pathParts.length - 2];
+          } else {
+            if (pathParts.length > 1) {
+              parent = pathParts.slice(0, pathParts.length - 1).join('/');
+            }
+            entry = pathParts[pathParts.length - 1];
+          }
+          const vfEntry: VirtualFolderEntryType = {
+            parent,
+            entry,
+            isDirectory,
+            zipEntry
+          };
+          console.log(vfEntry);
+          vfEntries.push(vfEntry);
+
+          // 初期表示用
+          if (vfEntry.parent === '') {
+            items.push({
+              fileName: vfEntry.entry,
+              fileBody: vfEntry.entry,
+              fileExt: '',
+              stats: {
+                vf: {
+                  fileDate: zipEntry.header.time,
+                  fileSize: zipEntry.header.size,
+                },
+              },
+              marked: false,
+              isDirectory: vfEntry.isDirectory,
+              isSymbolicLink: false,
+            });
+          }
+        });
+        // TODO 仮想フォルダ内パス表示
+        // TODO 仮想フォルダ構造をオブジェクト化して content に持たせる
+        dispatch(
+          changeVirtualFolder(
+            item,
+            vfEntries,
+            viewPosition,
+            '',
+            0,
+            null
+          )
+        );
+        dispatch(retrieveFileList(viewPosition, items, 0, false));
+      } catch (e) {
+        console.error(e);
+        dispatch(addLogMessage(`Can't extract archive file: ${targetPath}`));
+      }
+      return;
+    }
+
     console.log('[NO IMPLEMENT] open internal viewer:', targetPath);
+  };
+}
+
+export function changeVirtualFolderAction(
+  virtualFolderTarget: ItemStateType,
+  virtualFolderEntries: Array<VirtualFolderEntryType>,
+  viewPosition: string,
+  target: string,
+  targetPosition: number,
+  virtualFolderEntry: ?VirtualFolderEntryType
+) {
+  return {
+    type: CHANGE_VIRTUAL_FOLDER,
+    virtualFolderTarget,
+    virtualFolderEntries,
+    viewPosition,
+    path: target,
+    cursorPosition: targetPosition,
+    virtualFolderEntry
+  };
+}
+
+export function changeVirtualFolder(
+  virtualFolderTarget: ItemStateType,
+  virtualFolderEntries: Array<VirtualFolderEntryType>,
+  viewPosition: string,
+  targetPath: string,
+  targetPosition: number,
+  virtualFolderEntry: ?VirtualFolderEntryType
+) {
+  return (dispatch: (action: ActionType) => void) => {
+    dispatch(
+      changeVirtualFolderAction(
+        virtualFolderTarget,
+        virtualFolderEntries,
+        viewPosition,
+        targetPath,
+        targetPosition,
+        virtualFolderEntry
+      )
+    );
   };
 }
 
@@ -567,6 +804,18 @@ export function changeDirectoryToParent() {
   return (dispatch: (action: ActionType) => void, getState: Function) => {
     const { content } = getState();
     const { activeView, activeContent } = getActiveContent(content);
+
+    if (activeContent.isVirtualFolder) {
+      changeVirtualFolderAndFetch(
+        activeContent,
+        activeContent.position,
+        dispatch,
+        activeView,
+        true
+      );
+      return;
+    }
+
     const currentPath =
       convertPath(activeContent.path) || activeContent.path;
     const targetPath = path.join(currentPath, '..');

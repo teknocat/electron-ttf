@@ -35,7 +35,8 @@ import {
   SET_FILE_MASK,
   SWITCH_TO_TEXT_VIEW,
   SWITCH_TO_IMAGE_VIEW,
-  SWITCH_TO_DIRECTORY_VIEW
+  SWITCH_TO_DIRECTORY_VIEW,
+  CHANGE_VIRTUAL_FOLDER
 } from '../utils/types';
 import {getInitialState} from './initialState';
 import {anotherSideView} from '../utils/file';
@@ -111,6 +112,7 @@ export default function content(
             ] :
             state[action.viewPosition].histories
           ,
+          isVirtualFolder: false,
         }
       });
     case CHANGE_SORT_TYPE:
@@ -469,6 +471,19 @@ export default function content(
         ...state,
         viewMode: "DIRECTORY",
       };
+    case CHANGE_VIRTUAL_FOLDER:
+      if (!action.viewPosition) return state;
+      return Object.assign({}, state, {
+        [action.viewPosition]: {
+          ...state[action.viewPosition],
+          isVirtualFolder: true,
+          virtualFolderTarget: action.virtualFolderTarget,
+          virtualFolderEntries: action.virtualFolderEntries,
+          virtualPath: action.path,
+          position: action.cursorPosition || 0,
+          virtualFolderEntry: action.virtualFolderEntry
+        }
+      });
 
     default:
       return state;

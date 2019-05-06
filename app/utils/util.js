@@ -2,7 +2,7 @@
 
 import path from "path";
 import is from "electron-is";
-import type { ContentStateType } from './types';
+import type {ContentStateType, ItemListStateType, ItemStateType} from './types';
 import { anotherSideView } from './file';
 
 // 正規表現版 findIndex
@@ -24,6 +24,15 @@ export const getActiveContent = (content: ContentStateType) => {
 export function getMaskInfo(viewPosition?: string, content?: ContentStateType) {
   // console.log('getMaskInfo', viewPosition, content);
   if (!viewPosition || !content) return '';
+  const activeContent = content[viewPosition];
+  if (activeContent.isVirtualFolder) {
+    let delimiter = '';
+    if (activeContent.virtualPath !== '') {
+      delimiter = '/';
+    }
+    // TODO 未実装
+    return `${delimiter}*`
+  }
   const currentPath = content[viewPosition].path;
   const isRoot = path.parse(currentPath).root === currentPath;
   let delimiter;
@@ -33,4 +42,15 @@ export function getMaskInfo(viewPosition?: string, content?: ContentStateType) {
     delimiter = is.windows() ? '\\' : '/';
   }
   return `${delimiter}${content[viewPosition].maskPattern}`;
+}
+
+export function getPathInfo(itemList: ItemListStateType, maskInfo) {
+  let currentPath;
+  if (itemList.isVirtualFolder) {
+    const target: ItemStateType = itemList.virtualFolderTarget;
+    currentPath = `${target.fileName}:${itemList.virtualPath}`;
+  } else {
+    currentPath = itemList.path;
+  }
+  return `${currentPath}${maskInfo}`;
 }

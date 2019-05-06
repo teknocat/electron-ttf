@@ -72,7 +72,7 @@ export default class Item extends Component<Props> {
     const {
       viewPosition,
       index,
-      infoType,
+      infoType
     } = this.props;
 
     if (infoType === 1) {

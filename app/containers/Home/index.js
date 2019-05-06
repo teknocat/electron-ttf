@@ -62,7 +62,8 @@ import type {
   HistoryStateType,
   ItemStateType,
   PreferenceType,
-  CopyMoveType
+  CopyMoveType,
+  ItemListStateType
 } from '../../utils/types';
 import ChangeSortTypeDialog from '../../components/dialogs/ChangeSortTypeDialog';
 import GenericDialog from '../../components/dialogs/GenericDialog';
@@ -99,7 +100,7 @@ import {
   createMoveCursorToFilePrefixComboList,
   convertComboKey
 } from './util';
-import { getActiveContent, getMaskInfo } from '../../utils/util';
+import { getActiveContent, getMaskInfo, getPathInfo } from '../../utils/util';
 
 const Mousetrap = require('mousetrap-pause')(require('mousetrap'));
 
@@ -400,7 +401,7 @@ class Home extends Component<Props, State> {
     const { activeContent } = getActiveContent(props.content);
     const win = remote.getCurrentWindow();
     const maskInfo = getMaskInfo(props.content.activeView, props.content);
-    const pathInfo = `${activeContent.path}${maskInfo}`;
+    const pathInfo = getPathInfo(activeContent, maskInfo);
     if (this.state.preferences.showPathOnTitleBar) {
       win.setTitle(`${pathInfo} : ${getShortApplicationString()}`);
     } else {
@@ -413,11 +414,14 @@ class Home extends Component<Props, State> {
     const { content } = this.props;
     const { watcher, preferences } = this.state;
     // console.log('preferences', preferences);
-    const targetContent = content[viewPosition];
+    const targetContent: ItemListStateType = content[viewPosition];
     if (!targetContent || !targetContent.path) return;
     if (!watcher[viewPosition]) return;
 
     this.stopWatchDirectory(watcher, viewPosition);
+
+    // 仮想フォルダモードであれば何もしない
+    if (targetContent.isVirtualFolder) return;
 
     // 監視対象外ディレクトリであれば何もしない
     if (!preferences.watchExcludes || preferences.watchExcludes.includes(targetContent.path)) return;

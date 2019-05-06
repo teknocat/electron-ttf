@@ -46,6 +46,8 @@ export function convertPath(origPath: string, baseDir: string = os.homedir()) {
 
 export function getFileModeString(file: ItemStateType) {
   if (!file.stats) return '';
+  // TODO 未実装
+  if (file.stats.vf) return '';
   const mode = Mode(file.stats);
   let string = mode.toString();
   if (file.isSymbolicLink) {
@@ -56,20 +58,21 @@ export function getFileModeString(file: ItemStateType) {
 
 export function getFileDateString(file: ItemStateType) {
   if (!file.stats) return '';
-  const date = new Date(file.stats.mtimeMs);
+  const date = file.stats.vf ? file.stats.vf.fileDate : new Date(file.stats.mtimeMs);
   return moment(date).format('YYYY/MM/DD HH:mm');
 }
 
 export function getFileSizeString(file: ItemStateType) {
   if (file.isDirectory) return '< DIR >';
   if (!file.stats) return '';
-  // return file.stats.size.toLocaleString();
-  return file.stats.size;
+  return file.stats.vf ? file.stats.vf.fileSize : file.stats.size;
 }
 
 export function getFileOwnerString(file: ItemStateType) {
   const { stats } = file;
   if (!stats) return '';
+  // TODO 未実装
+  if (file.stats.vf) return '';
 
   // TODO windowsの場合の処理
   if (!posix) return '';

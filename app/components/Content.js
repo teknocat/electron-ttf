@@ -7,7 +7,7 @@ import type { ContentStateType } from '../utils/types';
 import { fetchItems } from '../actions/content';
 import styles from './Content.scss';
 import Item from './Item';
-import { getMaskInfo } from '../utils/util';
+import { getMaskInfo, getPathInfo } from '../utils/util';
 
 type Props = {
   viewPosition: string,
@@ -96,6 +96,12 @@ class Content extends Component<Props, State> {
       </div>
     );
   }
+
+  renderPathInfo = (viewPosition, content) => (
+    <span>
+      {getPathInfo(content[viewPosition], getMaskInfo(viewPosition, content))}
+    </span>
+  );
 
   onKeyDown(e) {
     // console.log('keyCode', e.keyCode);
@@ -212,10 +218,7 @@ class Content extends Component<Props, State> {
       >
         <div className={styles.topInfoContainer}>
           <div className={styles.pathInfo}>
-            <span>
-              {content[viewPosition].path}
-              {getMaskInfo(viewPosition, content)}
-            </span>
+            {this.renderPathInfo(viewPosition, content)}
           </div>
           <div className={styles.markInfo}>
             <span>{this.state.markInfo}</span>
