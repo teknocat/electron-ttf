@@ -1,7 +1,7 @@
 {
   "name": "electron-ttf",
   "productName": "Electron TTF",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Tiny TF - Electron Edition",
   "homepage": "https://github.com/teknocat/electron-ttf",
   "author": {

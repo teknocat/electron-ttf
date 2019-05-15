@@ -24,7 +24,7 @@ import {
   CHANGE_DIRECTORY,
   CHANGE_SORT_TYPE,
   CHANGE_INFO_TYPE,
-  MARK_ITEM,
+  // MARK_ITEM,
   RANGE_MARK_ITEM,
   MARK_ALL_ITEMS,
   MARK_ALL_FILES,
@@ -721,7 +721,9 @@ export function changeDirectoryTo(
 
 function markItem(viewPosition, row, mark) {
   return {
-    type: MARK_ITEM,
+    // type: MARK_ITEM,
+    // TODO こうしないと 'Uncaught TypeError: Assignment to constant variable.' が発生する
+    type: 'MARK_ITEM',
     viewPosition,
     row,
     mark
