@@ -133,9 +133,7 @@ type Props = {
     direction: string
   ) => void,
   markOrUnmarkItem: () => void,
-  rangeMarkItem: (
-    towardAbove: boolean
-  ) => void,
+  rangeMarkItem: (towardAbove: boolean) => void,
   copyItems: (
     forced: boolean,
     overwriteIfNewer: boolean,
@@ -143,10 +141,7 @@ type Props = {
     OverwriteIfNewerSubDirectory: ?boolean,
     destDir: ?string
   ) => void,
-  mayCopy: (
-    forced: boolean,
-    targetPath?: ?string
-  ) => void,
+  mayCopy: (forced: boolean, targetPath?: ?string) => void,
   cancelCopy: boolean => void,
   fetchItems: (
     viewPosition: string,
@@ -154,9 +149,7 @@ type Props = {
     keepMarks?: boolean
   ) => void,
   deleteItems: (forced: boolean) => void,
-  mayDelete: (
-    forced: boolean
-  ) => void,
+  mayDelete: (forced: boolean) => void,
   cancelDelete: boolean => void,
   moveItems: (
     forced: boolean,
@@ -164,10 +157,7 @@ type Props = {
     newFileName: ?string,
     destDir: ?string
   ) => void,
-  mayMove: (
-    forced: boolean,
-    targetPath?: ?string
-  ) => void,
+  mayMove: (forced: boolean, targetPath?: ?string) => void,
   cancelMove: boolean => void,
   createDirectory: (viewPosition: string, directory: ?string) => void,
   changeDirectoryTo: (
@@ -268,7 +258,7 @@ class Home extends Component<Props, State> {
         path: ''
       }
     },
-    preferences: setupPreferences(),
+    preferences: setupPreferences()
   };
 
   componentDidMount() {
@@ -385,6 +375,10 @@ class Home extends Component<Props, State> {
       default:
     }
 
+    if (this.props.content.viewMode !== 'DIRECTORY') {
+      this.stopWatchDirectoryAll();
+    }
+
     if (this.props.content.left && this.props.content.left.needToRefresh) {
       doRefresh(prevProps, this.props, this, 'left');
       this.watchDirectory('left');
@@ -424,7 +418,11 @@ class Home extends Component<Props, State> {
     if (targetContent.isVirtualFolder) return;
 
     // 監視対象外ディレクトリであれば何もしない
-    if (!preferences.watchExcludes || preferences.watchExcludes.includes(targetContent.path)) return;
+    if (
+      !preferences.watchExcludes ||
+      preferences.watchExcludes.includes(targetContent.path)
+    )
+      return;
 
     // pathが存在する場合のみwatcherを設定
     if (fs.existsSync(targetContent.path)) {
@@ -460,8 +458,9 @@ class Home extends Component<Props, State> {
 
   stopWatchDirectoryAll = () => {
     const { watcher } = this.state;
-    this.stopWatchDirectory(watcher,'left');
-    this.stopWatchDirectory(watcher,'right');
+    if (watcher.left.handler == null && watcher.right.handler == null) return;
+    this.stopWatchDirectory(watcher, 'left');
+    this.stopWatchDirectory(watcher, 'right');
     this.setState({ watcher });
   };
 
@@ -582,8 +581,10 @@ class Home extends Component<Props, State> {
 
   openCopyToFavoriteDialog = e => {
     // 登録リストがある場合のみダイアログ表示
-    if (this.state.preferences.favoritePathList
-      && this.state.preferences.favoritePathList.length > 0) {
+    if (
+      this.state.preferences.favoritePathList &&
+      this.state.preferences.favoritePathList.length > 0
+    ) {
       e.preventDefault();
       Mousetrap.pause();
       this.copyToFavoriteDialog.open();
@@ -614,7 +615,7 @@ class Home extends Component<Props, State> {
   };
 
   moveItems = () => {
-    const {activeContent } = getActiveContent(this.props.content);
+    const { activeContent } = getActiveContent(this.props.content);
     // 移動すべきデータがある場合のみ実行
     if (activeContent.items.filter(item => item.marked).length > 0) {
       this.props.mayMove(false);
@@ -623,8 +624,10 @@ class Home extends Component<Props, State> {
 
   openMoveToFavoriteDialog = e => {
     // 登録リストがある場合のみダイアログ表示
-    if (this.state.preferences.favoritePathList
-      && this.state.preferences.favoritePathList.length > 0) {
+    if (
+      this.state.preferences.favoritePathList &&
+      this.state.preferences.favoritePathList.length > 0
+    ) {
       e.preventDefault();
       Mousetrap.pause();
       this.moveToFavoriteDialog.open();
@@ -774,15 +777,20 @@ class Home extends Component<Props, State> {
 
   openChangeDirectoryFromFavoritesDialog = e => {
     // 登録リストがある場合のみダイアログ表示
-    if (this.state.preferences.favoritePathList
-      && this.state.preferences.favoritePathList.length > 0) {
+    if (
+      this.state.preferences.favoritePathList &&
+      this.state.preferences.favoritePathList.length > 0
+    ) {
       e.preventDefault();
       Mousetrap.pause();
       this.changeDirectoryFromFavoritesDialog.open();
     }
   };
 
-  closeChangeDirectoryFromFavoritesDialog = (submit: boolean, value: string) => {
+  closeChangeDirectoryFromFavoritesDialog = (
+    submit: boolean,
+    value: string
+  ) => {
     Mousetrap.unpause();
     if (submit) {
       this.props.changeDirectoryTo(this.props.content.activeView, value);
@@ -960,7 +968,8 @@ class Home extends Component<Props, State> {
     Mousetrap.unpause();
     console.log('stopSpinner');
     console.log('childProcess', this.props.content.childProcess);
-    if (this.props.content.childProcess) this.props.content.childProcess.kill('SIGHUP');
+    if (this.props.content.childProcess)
+      this.props.content.childProcess.kill('SIGHUP');
   };
 
   launchFindMode = e => {
@@ -989,7 +998,7 @@ class Home extends Component<Props, State> {
     this.props.findItem(activeView, findText, searchNext);
   };
 
-  switchToInternalView = (e) => {
+  switchToInternalView = e => {
     e.preventDefault();
     this.props.switchToInternalView();
   };
@@ -1000,9 +1009,7 @@ class Home extends Component<Props, State> {
   };
 
   launchTextEditor = () => {
-    this.props.launchTextEditor(
-      this.state.preferences.textEditor
-    );
+    this.props.launchTextEditor(this.state.preferences.textEditor);
   };
 
   showApplicationInfo = () => {
@@ -1029,19 +1036,19 @@ class Home extends Component<Props, State> {
       <div>
         <div className={styles.container} data-tid="container">
           <div id="mainPanel" className={styles.mainPanel}>
-            {content.viewMode === 'TEXT' &&
+            {content.viewMode === 'TEXT' && (
               <TextView
                 content={this.props.content}
                 exitView={this.exitInternalView.bind(this)}
               />
-            }
-            {content.viewMode === 'IMAGE' &&
+            )}
+            {content.viewMode === 'IMAGE' && (
               <ImageView
                 content={this.props.content}
                 exitView={this.exitInternalView.bind(this)}
               />
-            }
-            {content.viewMode === 'DIRECTORY' &&
+            )}
+            {content.viewMode === 'DIRECTORY' && (
               /* $FlowFixMe */
               <Content
                 viewPosition="left"
@@ -1054,8 +1061,8 @@ class Home extends Component<Props, State> {
                 content={this.props.content}
                 changeActiveView={this.props.changeActiveView}
               />
-            }
-            {content.viewMode === 'DIRECTORY' &&
+            )}
+            {content.viewMode === 'DIRECTORY' && (
               /* $FlowFixMe */
               <Content
                 viewPosition="right"
@@ -1068,7 +1075,7 @@ class Home extends Component<Props, State> {
                 content={this.props.content}
                 changeActiveView={this.props.changeActiveView}
               />
-            }
+            )}
             <Spinner
               showSpinner={content.showSpinner}
               stopSpinner={this.stopSpinner.bind(this)}
@@ -1138,9 +1145,7 @@ class Home extends Component<Props, State> {
               ref={ref => {
                 this.copyToFavoriteDialog = ref;
               }}
-              closeDialog={this.closeCopyToFavoriteDialog.bind(
-                this
-              )}
+              closeDialog={this.closeCopyToFavoriteDialog.bind(this)}
               activeView={activeView}
               favorites={this.state.preferences.favoritePathList}
               currentPath={activeContent.path}
@@ -1150,9 +1155,7 @@ class Home extends Component<Props, State> {
               ref={ref => {
                 this.moveToFavoriteDialog = ref;
               }}
-              closeDialog={this.closeMoveToFavoriteDialog.bind(
-                this
-              )}
+              closeDialog={this.closeMoveToFavoriteDialog.bind(this)}
               activeView={activeView}
               favorites={this.state.preferences.favoritePathList}
               currentPath={activeContent.path}
