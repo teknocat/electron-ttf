@@ -196,7 +196,7 @@
     "fs-extra": "^7.0.0",
     "glob": "^7.1.3",
     "history": "^4.7.2",
-    "moment": "^2.22.2",
+    "moment": "^2.29.4",
     "mousetrap": "^1.6.2",
     "mousetrap-pause": "^1.0.0",
     "react": "^16.4.2",
