@@ -179,7 +179,7 @@
     "url-loader": "^1.0.1",
     "webpack": "^4.29.0",
     "webpack-bundle-analyzer": "^3.3.2",
-    "webpack-cli": "^3.2.1",
+    "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.1.4",
     "webpack-merge": "^4.1.2"
   },
