@@ -31,7 +31,7 @@
 
 フェーズ2進行中:
 - [x] スモークテスト用コマンドを自動化 (`internals/scripts/docker-dev-wslg.sh`)。
-- [ ] Node/Electron 互換性マトリクスを調査 (Node 12/14/16/18)。
+- [x] Node/Electron 互換性マトリクスを調査 (Node 12/14/16/18)。
 - [ ] `node-sass` 依存を `sass` 系に置き換え。
 - [ ] ネイティブ依存 (`posix-ext` など) の削減。
 
@@ -76,6 +76,23 @@
 所見:
 - Node 本体の実行権限/パス解決まわりで失敗している可能性が高い。
 - まずコンテナ内で `which node` と `ls -l $(which node)` を確認して切り分ける。
+
+### Node 18.20.4
+
+実行:
+- `bash internals/scripts/migration-node-probe.sh 18.20.4`
+
+結果:
+- FAIL
+- ログ: `.artifacts/migration/node-18.20.4.log`
+
+失敗内容(抜粋):
+- `Error: error:0308010C:digital envelope routines::unsupported`
+- `code: 'ERR_OSSL_EVP_UNSUPPORTED'`
+
+所見:
+- webpack 4 系と OpenSSL 3 (Node 18) の既知非互換に該当。
+- 暫定対応は `NODE_OPTIONS=--openssl-legacy-provider`、本対応は webpack/babel の更新。
 
 フェーズ3目標:
 - [ ] Electron メジャーバージョンを段階的に更新し、各段階でスモークテスト実施。
