@@ -6,7 +6,14 @@ import { convertPath } from '../utils/file';
 import {DEFAULT_TEXT_FILE_PATTERN} from "../utils/types";
 import type {ContentStateType} from "../utils/types";
 
-const posix = !is.windows() && process.env.NODE_ENV !== 'test' ? require('posix-ext') : null;
+let posix = null;
+if (!is.windows() && process.env.NODE_ENV !== 'test') {
+  try {
+    posix = require('posix-ext');
+  } catch (err) {
+    posix = null;
+  }
+}
 
 // reducersのテストを通すためには独自ファイルを指定する必要がある
 if (process.env.NODE_ENV === 'test') {

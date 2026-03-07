@@ -6,7 +6,14 @@ import type { ActionType, ItemStateType } from '../utils/types';
 import { RENAME_ITEM } from '../utils/types';
 import { convertPath } from '../utils/file';
 
-const posix = !is.windows() && process.env.NODE_ENV !== 'test' ? require('posix-ext') : null;
+let posix = null;
+if (!is.windows() && process.env.NODE_ENV !== 'test') {
+  try {
+    posix = require('posix-ext');
+  } catch (err) {
+    posix = null;
+  }
+}
 
 export function renameItemAction(
   viewPosition: string,

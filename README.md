@@ -34,6 +34,16 @@ $ npm run dev
 
 あるいは、アーカイブを展開して実行ファイル(`ettf`/`Electron TTF.exe`)を起動。
 
+### WSL + Docker + WSLg での起動確認(2026-03)
+
+Windows 11 + WSL2 環境で、Docker 上の Node 10 互換環境を使って GUI 起動確認する場合:
+
+```bash
+$ bash internals/scripts/docker-dev-wslg.sh
+```
+
+起動確認ログは `docs/migration-log-2026-03-08.md` に記録。
+
 ## 実装済機能
 
 ### キー操作

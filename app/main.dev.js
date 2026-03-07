@@ -42,6 +42,10 @@ const installExtensions = async () => {
   ).catch(console.log);
 };
 
+const shouldInstallDevtoolsExtensions = () => (
+  process.env.SKIP_DEVTOOLS_EXTENSIONS !== '1'
+);
+
 const cli = parseArgs(`
     Electron TTF - Tiny TF (Electron Edition)
  
@@ -90,8 +94,9 @@ app.on('window-all-closed', () => {
 
 app.on('ready', async () => {
   if (
-    process.env.NODE_ENV === 'development' ||
-    process.env.DEBUG_PROD === 'true'
+    (process.env.NODE_ENV === 'development' ||
+      process.env.DEBUG_PROD === 'true') &&
+    shouldInstallDevtoolsExtensions()
   ) {
     await installExtensions();
   }
