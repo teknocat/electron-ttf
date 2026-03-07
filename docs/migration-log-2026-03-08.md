@@ -61,6 +61,22 @@
 - Node 14 でも Main process のビルドは成功。
 - 次は Node 16 の失敗点を切り分ける。
 
+### Node 16.20.2
+
+実行:
+- `bash internals/scripts/migration-node-probe.sh 16.20.2`
+
+結果:
+- FAIL
+- ログ: `.artifacts/migration/node-16.20.2.log`
+
+失敗内容(抜粋):
+- `/usr/bin/env: 'node': Permission denied`
+
+所見:
+- Node 本体の実行権限/パス解決まわりで失敗している可能性が高い。
+- まずコンテナ内で `which node` と `ls -l $(which node)` を確認して切り分ける。
+
 フェーズ3目標:
 - [ ] Electron メジャーバージョンを段階的に更新し、各段階でスモークテスト実施。
 - [ ] webpack/babel ツールチェーンをサポート対象へ更新。
