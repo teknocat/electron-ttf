@@ -48,6 +48,19 @@
 - 現行ツールチェーンでも、Node 12 では Main process のバンドル生成が可能。
 - 次は Node 14 のプローブを実施し、その後 renderer/dev 起動確認へ進む。
 
+### Node 14.21.3
+
+実行:
+- `bash internals/scripts/migration-node-probe.sh 14.21.3`
+
+結果:
+- PASS (`npm install --ignore-scripts` + `npm run build-main`)
+- ログ: `.artifacts/migration/node-14.21.3.log`
+
+所見:
+- Node 14 でも Main process のビルドは成功。
+- 次は Node 16 の失敗点を切り分ける。
+
 フェーズ3目標:
 - [ ] Electron メジャーバージョンを段階的に更新し、各段階でスモークテスト実施。
 - [ ] webpack/babel ツールチェーンをサポート対象へ更新。
