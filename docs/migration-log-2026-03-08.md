@@ -179,3 +179,20 @@
   `migration-electron-probe.sh` を修正。
 - 修正後、`build-main` / `renderer` / `main` の全工程が通過し
   `alive=2` を確認。
+
+## Node 20 マトリクス検証 (2026-03-08)
+
+実行:
+- `bash internals/scripts/migration-electron-probe.sh 20.11.1:28.3.3`
+- `bash internals/scripts/migration-electron-probe.sh 20.11.1:30.0.9`
+
+結果:
+- `20.11.1 + 28.3.3`: PASS
+  - ログ: `.artifacts/migration/node-20.11.1-electron-28.3.3.log`
+- `20.11.1 + 30.0.9`: PASS
+  - ログ: `.artifacts/migration/node-20.11.1-electron-30.0.9.log`
+
+所見:
+- 既存の OpenSSL 対応 (`NODE_OPTIONS=--openssl-legacy-provider` を Node 側工程に適用し、
+  Electron 起動時はクリア) で Node 20 系でも成立。
+- 現時点の自動プローブ範囲では、Node 20 + Electron 30 までスモーク通過。
