@@ -317,3 +317,18 @@
 - `alive=2` に加え、`PROBE_INITIAL_SCREEN_OK {"leftPath":"/root","rightPath":"/root","leftItems":9,"rightItems":9}`
   を確認。
 - つまり Electron 36 でも「dev server 起動 + 初期2ペインホーム一覧描画」まで成立。
+
+### 22.11.0 + 38.0.0
+
+実行:
+- `bash internals/scripts/migration-electron-probe.sh 22.11.0:38.0.0`
+
+結果:
+- PASS
+- ログ: `.artifacts/migration/node-22.11.0-electron-38.0.0.log`
+
+確認ポイント:
+- `alive=2` を確認。
+- `PROBE_INITIAL_SCREEN_OK {"leftPath":"/root","rightPath":"/root","leftItems":9,"rightItems":9}`
+  を確認。
+- Electron 38 でも「dev server 起動 + 初期2ペインホーム一覧描画」まで成立。
