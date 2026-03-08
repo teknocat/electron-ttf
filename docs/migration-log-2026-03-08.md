@@ -374,3 +374,32 @@
 - `PROBE_INITIAL_SCREEN_OK {"leftPath":"/root","rightPath":"/root","leftItems":9,"rightItems":9}`
   を確認。
 - 公開最新版 `40.8.0` でも「dev server 起動 + 初期2ペインホーム一覧描画」まで成立。
+
+## Node 24 引き上げ検証 (2026-03-08)
+
+対象:
+- `24.1.0 + 40.8.0`
+
+初回結果:
+- FAIL
+
+失敗内容(致命):
+- renderer 起動時に `http-deceiver` が `process.binding('http_parser')` を参照し、
+  Node 24 で `Error: No such module: http_parser` が発生。
+
+対応:
+- `internals/scripts/node24-http-parser-shim.js` を追加。
+  - Node 24+ で欠落した `process.binding('http_parser')` を、`_http_common` の
+    `HTTPParser/methods` で互換提供。
+- `start-renderer-dev` と `migration-electron-probe.sh` の renderer 起動に
+  `-r ./internals/scripts/node24-http-parser-shim.js` を追加。
+
+再実行結果:
+- PASS
+- ログ: `.artifacts/migration/node-24.1.0-electron-40.8.0.log`
+
+確認ポイント:
+- `alive=2` を確認。
+- `PROBE_INITIAL_SCREEN_OK {"leftPath":"/root","rightPath":"/root","leftItems":9,"rightItems":9}`
+  を確認。
+- Node 24 でも「dev server 起動 + 初期2ペインホーム一覧描画」まで成立。

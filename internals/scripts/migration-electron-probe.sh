@@ -86,7 +86,7 @@ for combo in "${COMBOS[@]}"; do
       NODE_ENV=production node --trace-warnings -r babel-register ./node_modules/webpack/bin/webpack --config webpack.config.main.prod.js --colors >/tmp/build-main.log 2>&1; \
       set +e; \
       xvfb-run -a bash -lc 'set -euo pipefail; \
-        NODE_ENV=development node --trace-warnings -r babel-register ./node_modules/webpack-dev-server/bin/webpack-dev-server --config webpack.config.renderer.dev.js > /tmp/renderer.log 2>&1 & \
+        NODE_ENV=development node --trace-warnings -r ./internals/scripts/node24-http-parser-shim.js -r babel-register ./node_modules/webpack-dev-server/bin/webpack-dev-server --config webpack.config.renderer.dev.js > /tmp/renderer.log 2>&1 & \
         renderer_pid=\$!; \
         sleep 12; \
         NODE_OPTIONS= HOT=1 NODE_ENV=development MIGRATION_PROBE=1 SKIP_DEVTOOLS_EXTENSIONS=1 ELECTRON_DISABLE_SANDBOX=1 ./node_modules/.bin/electron ./app > /tmp/main.log 2>&1 & \
