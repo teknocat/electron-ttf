@@ -196,3 +196,29 @@
 - 既存の OpenSSL 対応 (`NODE_OPTIONS=--openssl-legacy-provider` を Node 側工程に適用し、
   Electron 起動時はクリア) で Node 20 系でも成立。
 - 現時点の自動プローブ範囲では、Node 20 + Electron 30 までスモーク通過。
+
+## ホスト起動の復旧 (2026-03-08)
+
+事象:
+- ホストで `npm run dev` 実行時、renderer 初期化中に `electron.remote` 由来の例外で白画面。
+- 主な例外:
+  - `Cannot destructure property 'app' of '_electron.remote' as it is undefined`
+  - `Cannot read properties of undefined (reading 'app')` (`electron-settings` 内部)
+
+対応:
+- `app/utils/system.js` と `app/containers/Home/index.js` の `remote` 利用をガードし、
+  `document.title` / `ipcRenderer.send('closed')` へフォールバック。
+- `electron-settings` への直接アクセスを `app/utils/settings.js` 経由に置換し、
+  `settings.get/set/setPath` を例外安全化。
+
+結果:
+- 修正後、ホスト環境でエラーなしで画面表示を確認。
+
+## ホスト既定 Node の更新 (2026-03-08)
+
+対応:
+- `.nvmrc` を `10.24.1` から `12.22.12` へ更新。
+
+所見:
+- `sass` ツールチェーン利用時は Node 10 だと `globalThis is not defined` で起動不可のため、
+  ホスト検証は Node 12 以上を既定とする。
