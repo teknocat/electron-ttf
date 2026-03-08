@@ -258,3 +258,21 @@
 所見:
 - `build-main` / `renderer` / `main` の全工程で致命エラーは発生せず、`alive=2` を確認。
 - 既知の非致命警告 (`legacy-js-api`, CSP, dbus/GPU 初期化ログ) のみ継続。
+
+## PASS 判定基準の更新 (2026-03-08)
+
+背景:
+- `build` 成功 + ウィンドウ表示だけでは、初期画面が実際に動作している保証として不十分。
+
+更新内容:
+- `migration-electron-probe.sh` の PASS 条件を拡張。
+- 既存条件 (`alive=2`) に加えて、renderer が以下を満たした時のみ送信する
+  IPC マーカー `PROBE_INITIAL_SCREEN_OK` を main ログで必須化。
+  - 2ペイン DOM (`content_left` / `content_right`) が存在
+  - 先頭アイテム DOM (`item_left_0` / `item_right_0`) が存在
+  - 左右パスが `os.homedir()` と一致
+  - 左右リストが1件以上
+
+確認結果:
+- `22.11.0 + 32.0.0` で `PROBE_INITIAL_SCREEN_OK {"leftPath":"/root","rightPath":"/root",...}` を確認。
+- これ以降、プローブ PASS は「dev server 起動 + 初期2ペインホーム一覧成立」を含む。

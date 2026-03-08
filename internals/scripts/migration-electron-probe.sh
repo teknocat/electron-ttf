@@ -89,7 +89,7 @@ for combo in "${COMBOS[@]}"; do
         NODE_ENV=development node --trace-warnings -r babel-register ./node_modules/webpack-dev-server/bin/webpack-dev-server --config webpack.config.renderer.dev.js > /tmp/renderer.log 2>&1 & \
         renderer_pid=\$!; \
         sleep 12; \
-        NODE_OPTIONS= HOT=1 NODE_ENV=development SKIP_DEVTOOLS_EXTENSIONS=1 ELECTRON_DISABLE_SANDBOX=1 ./node_modules/.bin/electron -r babel-register ./app/main.dev.js > /tmp/main.log 2>&1 & \
+        NODE_OPTIONS= HOT=1 NODE_ENV=development MIGRATION_PROBE=1 SKIP_DEVTOOLS_EXTENSIONS=1 ELECTRON_DISABLE_SANDBOX=1 ./node_modules/.bin/electron -r babel-register ./app/main.dev.js > /tmp/main.log 2>&1 & \
         main_pid=\$!; \
         sleep 25; \
         alive=0; \
@@ -111,6 +111,7 @@ for combo in "${COMBOS[@]}"; do
       cat /tmp/smoke.meta; \
       if [ \$smoke_exit -ne 0 ] && [ \$smoke_exit -ne 143 ]; then echo \"dev smoke exited with code \$smoke_exit\"; exit 1; fi; \
       if ! grep -q '^alive=2$' /tmp/smoke.meta; then echo 'renderer or main process exited early'; exit 1; fi; \
+      if ! grep -q 'PROBE_INITIAL_SCREEN_OK' /tmp/main.log; then echo 'initial dual-pane home screen not confirmed'; exit 1; fi; \
       if grep -Eq 'npm ERR!|Cannot find module|ERR_OSSL_EVP_UNSUPPORTED|Module build failed|error while loading shared libraries|Running as root without --no-sandbox' /tmp/renderer.log /tmp/main.log; then \
         echo 'fatal pattern detected in dev smoke log'; \
         exit 1; \

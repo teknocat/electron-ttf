@@ -42,11 +42,11 @@ const installExtensions = async () => {
   ).catch(console.log);
 };
 
-const shouldInstallDevtoolsExtensions = () => (
-  process.env.SKIP_DEVTOOLS_EXTENSIONS !== '1'
-);
+const shouldInstallDevtoolsExtensions = () =>
+  process.env.SKIP_DEVTOOLS_EXTENSIONS !== '1';
 
-const cli = parseArgs(`
+const cli = parseArgs(
+  `
     Electron TTF - Tiny TF (Electron Edition)
  
     Usage
@@ -62,15 +62,17 @@ const cli = parseArgs(`
  
     Examples
       $ ettf -L /tmp
-`, {
-  alias: {
-    h: 'help'
-  },
-  default: {
-    debug: false,
-    enableCopyToFuse: false
+`,
+  {
+    alias: {
+      h: 'help'
+    },
+    default: {
+      debug: false,
+      enableCopyToFuse: false
+    }
   }
-});
+);
 
 global.sharedObject = {
   cliFlags: {
@@ -120,7 +122,7 @@ app.on('ready', async () => {
     transparent: true,
     frame: false,
     alwaysOnTop: true,
-    skipTaskbar: true,
+    skipTaskbar: true
   });
   splash.loadURL(`file://${__dirname}/splash.html`);
   splash.webContents.on('did-finish-load', () => {
@@ -143,7 +145,7 @@ app.on('ready', async () => {
     }
   });
 
-  mainWindow.on('close', (e) => {
+  mainWindow.on('close', e => {
     if (mainWindow) {
       e.preventDefault();
       mainWindow.webContents.send('app-close');
@@ -171,4 +173,10 @@ ipcMain.on('closed', () => {
 
 ipcMain.on('app-ready', () => {
   splash.destroy();
+});
+
+ipcMain.on('probe-initial-screen-ok', (event, payload) => {
+  if (process.env.MIGRATION_PROBE === '1') {
+    console.log(`PROBE_INITIAL_SCREEN_OK ${JSON.stringify(payload)}`);
+  }
 });
