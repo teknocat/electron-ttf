@@ -68,5 +68,4 @@
 2. セキュリティ設定を段階的に改善する。
    - まず `contextIsolation: true`
    - 次に `nodeIntegration: false`
-3. `shell.openItem` を `shell.openPath` へ置換する。
-4. 依存更新後に `--openssl-legacy-provider` と `node24-http-parser-shim` の撤去可否を再評価する。
+3. 依存更新後に `--openssl-legacy-provider` と `node24-http-parser-shim` の撤去可否を再評価する。
