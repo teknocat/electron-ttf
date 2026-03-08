@@ -245,3 +245,16 @@
 - npm 切替後は `build-main` / `renderer` / `main` が通過し、`alive=2` を確認。
 - 非致命警告 (`legacy-js-api`, CSP, dbus/GPU 初期化ログ) は継続観測対象とし、
   現時点ではブロッカーではないと判断。
+
+### 22.11.0 + 32.0.0
+
+実行:
+- `bash internals/scripts/migration-electron-probe.sh 22.11.0:32.0.0`
+
+結果:
+- PASS
+- ログ: `.artifacts/migration/node-22.11.0-electron-32.0.0.log`
+
+所見:
+- `build-main` / `renderer` / `main` の全工程で致命エラーは発生せず、`alive=2` を確認。
+- 既知の非致命警告 (`legacy-js-api`, CSP, dbus/GPU 初期化ログ) のみ継続。
