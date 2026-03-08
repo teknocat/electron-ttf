@@ -347,3 +347,30 @@
 - `PROBE_INITIAL_SCREEN_OK {"leftPath":"/root","rightPath":"/root","leftItems":9,"rightItems":9}`
   を確認。
 - Electron 40 でも「dev server 起動 + 初期2ペインホーム一覧描画」まで成立。
+
+### 22.11.0 + 42.0.0 (公開状況確認)
+
+実行:
+- `bash internals/scripts/migration-electron-probe.sh 22.11.0:42.0.0`
+
+結果:
+- FAIL (ETARGET)
+
+内容:
+- `npm ERR! notarget No matching version found for electron@42.0.0.`
+- 2026-03-08 時点で `42.0.0` は未公開。
+
+### 22.11.0 + 40.8.0 (公開最新版)
+
+実行:
+- `bash internals/scripts/migration-electron-probe.sh 22.11.0:40.8.0`
+
+結果:
+- PASS
+- ログ: `.artifacts/migration/node-22.11.0-electron-40.8.0.log`
+
+確認ポイント:
+- `alive=2` を確認。
+- `PROBE_INITIAL_SCREEN_OK {"leftPath":"/root","rightPath":"/root","leftItems":9,"rightItems":9}`
+  を確認。
+- 公開最新版 `40.8.0` でも「dev server 起動 + 初期2ペインホーム一覧描画」まで成立。
