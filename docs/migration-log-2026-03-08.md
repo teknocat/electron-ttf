@@ -276,3 +276,18 @@
 確認結果:
 - `22.11.0 + 32.0.0` で `PROBE_INITIAL_SCREEN_OK {"leftPath":"/root","rightPath":"/root",...}` を確認。
 - これ以降、プローブ PASS は「dev server 起動 + 初期2ペインホーム一覧成立」を含む。
+
+### 22.11.0 + 34.0.0
+
+実行:
+- `bash internals/scripts/migration-electron-probe.sh 22.11.0:34.0.0`
+
+結果:
+- PASS
+- ログ: `.artifacts/migration/node-22.11.0-electron-34.0.0.log`
+
+確認ポイント:
+- `alive=2` に加え、`main.log` に
+  `PROBE_INITIAL_SCREEN_OK {"leftPath":"/root","rightPath":"/root","leftItems":9,"rightItems":9}`
+  を確認。
+- つまり「dev server 起動 + ウィンドウ表示 + 初期2ペインホーム一覧描画」まで成立。
