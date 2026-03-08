@@ -222,3 +222,26 @@
 所見:
 - `sass` ツールチェーン利用時は Node 10 だと `globalThis is not defined` で起動不可のため、
   ホスト検証は Node 12 以上を既定とする。
+
+## Node 22 マトリクス検証 (2026-03-08)
+
+実行:
+- `bash internals/scripts/migration-electron-probe.sh 22.11.0:30.0.9`
+- `bash internals/scripts/migration-electron-probe.sh 22.11.0:28.3.3`
+
+結果:
+- `22.11.0 + 30.0.9`: PASS
+  - ログ: `.artifacts/migration/node-22.11.0-electron-30.0.9.log`
+- `22.11.0 + 28.3.3`: PASS
+  - ログ: `.artifacts/migration/node-22.11.0-electron-28.3.3.log`
+
+対応メモ:
+- 初回は `npm error Invalid property "node"` で失敗。
+- 原因は Node 22 同梱 npm (10系) が `devEngines.node` をエラー扱いするため。
+- `migration-electron-probe.sh` を更新し、Node 22 以上ではプローブ内で npm 9 に切り替えてから
+  依存インストールを行うよう修正。
+
+所見:
+- npm 切替後は `build-main` / `renderer` / `main` が通過し、`alive=2` を確認。
+- 非致命警告 (`legacy-js-api`, CSP, dbus/GPU 初期化ログ) は継続観測対象とし、
+  現時点ではブロッカーではないと判断。

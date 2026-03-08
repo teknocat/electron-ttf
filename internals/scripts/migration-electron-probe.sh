@@ -68,6 +68,11 @@ for combo in "${COMBOS[@]}"; do
       export npm_config_cache=/root/.npm; \
       nvm install ${NODE_VERSION} >/dev/null; \
       nvm use ${NODE_VERSION} >/dev/null; \
+      if [ ${NODE_VERSION%%.*} -ge 22 ]; then \
+        cd /tmp; \
+        npm install -g npm@9 >/dev/null; \
+        hash -r; \
+      fi; \
       chmod 755 /root /root/.nvm /root/.nvm/versions /root/.nvm/versions/node /root/.nvm/versions/node/v${NODE_VERSION} /root/.nvm/versions/node/v${NODE_VERSION}/bin || true; \
       cd /work; \
       npm install --ignore-scripts >/dev/null; \
