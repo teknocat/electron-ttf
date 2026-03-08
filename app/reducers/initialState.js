@@ -3,12 +3,13 @@ import settings from 'electron-settings';
 import os from 'os';
 import is from 'electron-is';
 import { convertPath } from '../utils/file';
-import {DEFAULT_TEXT_FILE_PATTERN} from "../utils/types";
-import type {ContentStateType} from "../utils/types";
+import { DEFAULT_TEXT_FILE_PATTERN } from '../utils/types';
+import type { ContentStateType } from '../utils/types';
 
 let posix = null;
 if (!is.windows() && process.env.NODE_ENV !== 'test') {
   try {
+    // eslint-disable-next-line global-require, import/no-unresolved
     posix = require('posix-ext');
   } catch (err) {
     posix = null;
@@ -110,9 +111,7 @@ const preferences = {
   showPathOnTitleBar: false,
   favoritePathList: [],
   textFileRegexp: DEFAULT_TEXT_FILE_PATTERN,
-  textEditor: posix
-    ? 'mousepad $P'
-    : 'notepad $P'
+  textEditor: posix ? 'mousepad $P' : 'notepad $P'
 };
 
 export function getInitialPreferences() {

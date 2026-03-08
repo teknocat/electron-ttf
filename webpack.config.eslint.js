@@ -1,3 +1,8 @@
-require('babel-register');
+const path = require('path');
 
-module.exports = require('./webpack.config.renderer.dev');
+module.exports = {
+  resolve: {
+    extensions: ['.js', '.jsx', '.json'],
+    modules: [path.join(__dirname, 'app'), 'node_modules']
+  }
+};
