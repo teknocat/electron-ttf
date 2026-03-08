@@ -1,9 +1,9 @@
 import * as electron from 'electron';
-import settings from 'electron-settings';
 import os from 'os';
 import is from 'electron-is';
 import { convertPath } from '../utils/file';
 import { DEFAULT_TEXT_FILE_PATTERN } from '../utils/types';
+import { settingsGet, settingsSetPath } from '../utils/settings';
 import type { ContentStateType } from '../utils/types';
 
 let posix = null;
@@ -20,20 +20,20 @@ const remote = electron.remote || null;
 
 // reducersのテストを通すためには独自ファイルを指定する必要がある
 if (process.env.NODE_ENV === 'test') {
-  settings.setPath('test.json');
+  settingsSetPath('test.json');
 }
 
 const content: ContentStateType = {
-  activeView: settings.get('electronTTF.content.activeView', 'left'),
+  activeView: settingsGet('electronTTF.content.activeView', 'left'),
   left: {
     position: 0,
     items: [],
-    path: settings.get('electronTTF.content.left.path', os.homedir()),
-    sortType: settings.get(
+    path: settingsGet('electronTTF.content.left.path', os.homedir()),
+    sortType: settingsGet(
       'electronTTF.content.left.sortType',
       'FileAscDirFirst'
     ),
-    infoType: settings.get('electronTTF.content.left.infoType', 1),
+    infoType: settingsGet('electronTTF.content.left.infoType', 1),
     histories: [],
     isInvalidPath: false,
     needToRefresh: false,
@@ -47,12 +47,12 @@ const content: ContentStateType = {
   right: {
     position: 0,
     items: [],
-    path: settings.get('electronTTF.content.right.path', os.homedir()),
-    sortType: settings.get(
+    path: settingsGet('electronTTF.content.right.path', os.homedir()),
+    sortType: settingsGet(
       'electronTTF.content.right.sortType',
       'FileAscDirFirst'
     ),
-    infoType: settings.get('electronTTF.content.right.infoType', 1),
+    infoType: settingsGet('electronTTF.content.right.infoType', 1),
     histories: [],
     isInvalidPath: false,
     needToRefresh: false,

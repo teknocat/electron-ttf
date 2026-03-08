@@ -1,8 +1,8 @@
 // @flow
 
-import settings from 'electron-settings';
-import type {ContentStateType, PreferenceType} from "../../utils/types";
-import {getInitialPreferences} from "../../reducers/initialState";
+import type { ContentStateType, PreferenceType } from '../../utils/types';
+import { getInitialPreferences } from '../../reducers/initialState';
+import { settingsGet, settingsSet } from '../../utils/settings';
 
 export const getTargetItem = (content: ContentStateType) => {
   if (!content) return null;
@@ -13,22 +13,41 @@ export const getTargetItem = (content: ContentStateType) => {
 
 export const setupPreferences = () => {
   const initPrefs = getInitialPreferences();
-  const myPrefs = settings.get('electronTTF.preferences');
+  const myPrefs = settingsGet('electronTTF.preferences', null);
 
   return {
-    terminalEmulator: myPrefs && myPrefs.terminalEmulator ? myPrefs.terminalEmulator : initPrefs.terminalEmulator,
+    terminalEmulator:
+      myPrefs && myPrefs.terminalEmulator
+        ? myPrefs.terminalEmulator
+        : initPrefs.terminalEmulator,
     kbd101: myPrefs && myPrefs.kbd101 ? myPrefs.kbd101 : initPrefs.kbd101,
-    watchExcludes: myPrefs && myPrefs.watchExcludes ? myPrefs.watchExcludes : initPrefs.watchExcludes,
-    showPathOnTitleBar: myPrefs && myPrefs.showPathOnTitleBar ? myPrefs.showPathOnTitleBar : initPrefs.showPathOnTitleBar,
-    favoritePathList: myPrefs && myPrefs.favoritePathList ? myPrefs.favoritePathList : initPrefs.favoritePathList,
-    textFileRegexp: myPrefs && myPrefs.textFileRegexp ? myPrefs.textFileRegexp : initPrefs.textFileRegexp,
-    textEditor: myPrefs && myPrefs.textEditor ? myPrefs.textEditor : initPrefs.textEditor,
-  }
+    watchExcludes:
+      myPrefs && myPrefs.watchExcludes
+        ? myPrefs.watchExcludes
+        : initPrefs.watchExcludes,
+    showPathOnTitleBar:
+      myPrefs && myPrefs.showPathOnTitleBar
+        ? myPrefs.showPathOnTitleBar
+        : initPrefs.showPathOnTitleBar,
+    favoritePathList:
+      myPrefs && myPrefs.favoritePathList
+        ? myPrefs.favoritePathList
+        : initPrefs.favoritePathList,
+    textFileRegexp:
+      myPrefs && myPrefs.textFileRegexp
+        ? myPrefs.textFileRegexp
+        : initPrefs.textFileRegexp,
+    textEditor:
+      myPrefs && myPrefs.textEditor ? myPrefs.textEditor : initPrefs.textEditor
+  };
 };
 
-export const savePreferences = (content: ContentStateType, preferences: PreferenceType) => {
-  const {left, right} = content;
-  settings.set('electronTTF', {
+export const savePreferences = (
+  content: ContentStateType,
+  preferences: PreferenceType
+) => {
+  const { left, right } = content;
+  settingsSet('electronTTF', {
     content: {
       activeView: content.activeView,
       left: {
@@ -191,7 +210,6 @@ export const convertComboKey = (combo: string, kbd101: ?boolean) => {
         return '\\?';
       default:
     }
-
   } else {
     const match = combo.match(/^mod\+([a-z0-9\-^\\@;:,/])$/);
     if (match != null) {
@@ -218,7 +236,7 @@ export const convertComboKey = (combo: string, kbd101: ?boolean) => {
       case 'mod+shift+6':
         return '&';
       case 'mod+shift+7':
-        return '\\\'';
+        return "\\'";
       case 'mod+shift+8':
         return '\\(';
       case 'mod+shift+9':
