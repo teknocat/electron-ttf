@@ -42,7 +42,11 @@ const installExtensions = async () => {
   ).catch(console.log);
 };
 
-const cli = parseArgs(`
+const shouldInstallDevtoolsExtensions = () =>
+  process.env.SKIP_DEVTOOLS_EXTENSIONS !== '1';
+
+const cli = parseArgs(
+  `
     Electron TTF - Tiny TF (Electron Edition)
  
     Usage
@@ -58,15 +62,17 @@ const cli = parseArgs(`
  
     Examples
       $ ettf -L /tmp
-`, {
-  alias: {
-    h: 'help'
-  },
-  default: {
-    debug: false,
-    enableCopyToFuse: false
+`,
+  {
+    alias: {
+      h: 'help'
+    },
+    default: {
+      debug: false,
+      enableCopyToFuse: false
+    }
   }
-});
+);
 
 global.sharedObject = {
   cliFlags: {
@@ -90,8 +96,9 @@ app.on('window-all-closed', () => {
 
 app.on('ready', async () => {
   if (
-    process.env.NODE_ENV === 'development' ||
-    process.env.DEBUG_PROD === 'true'
+    (process.env.NODE_ENV === 'development' ||
+      process.env.DEBUG_PROD === 'true') &&
+    shouldInstallDevtoolsExtensions()
   ) {
     await installExtensions();
   }
@@ -99,7 +106,13 @@ app.on('ready', async () => {
   mainWindow = new BrowserWindow({
     show: false,
     width: 1024,
-    height: 728
+    height: 728,
+    webPreferences: {
+      // Keep legacy renderer assumptions during migration steps.
+      nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true
+    }
   });
 
   splash = new BrowserWindow({
@@ -109,7 +122,7 @@ app.on('ready', async () => {
     transparent: true,
     frame: false,
     alwaysOnTop: true,
-    skipTaskbar: true,
+    skipTaskbar: true
   });
   splash.loadURL(`file://${__dirname}/splash.html`);
   splash.webContents.on('did-finish-load', () => {
@@ -132,7 +145,7 @@ app.on('ready', async () => {
     }
   });
 
-  mainWindow.on('close', (e) => {
+  mainWindow.on('close', e => {
     if (mainWindow) {
       e.preventDefault();
       mainWindow.webContents.send('app-close');

@@ -1,29 +1,39 @@
-import { remote } from 'electron';
-import settings from 'electron-settings';
+import * as electron from 'electron';
 import os from 'os';
 import is from 'electron-is';
 import { convertPath } from '../utils/file';
-import {DEFAULT_TEXT_FILE_PATTERN} from "../utils/types";
-import type {ContentStateType} from "../utils/types";
+import { DEFAULT_TEXT_FILE_PATTERN } from '../utils/types';
+import { settingsGet, settingsSetPath } from '../utils/settings';
+import type { ContentStateType } from '../utils/types';
 
-const posix = !is.windows() && process.env.NODE_ENV !== 'test' ? require('posix-ext') : null;
+let posix = null;
+if (!is.windows() && process.env.NODE_ENV !== 'test') {
+  try {
+    // eslint-disable-next-line global-require, import/no-unresolved
+    posix = require('posix-ext');
+  } catch (err) {
+    posix = null;
+  }
+}
+
+const remote = electron.remote || null;
 
 // reducersのテストを通すためには独自ファイルを指定する必要がある
 if (process.env.NODE_ENV === 'test') {
-  settings.setPath('test.json');
+  settingsSetPath('test.json');
 }
 
 const content: ContentStateType = {
-  activeView: settings.get('electronTTF.content.activeView', 'left'),
+  activeView: settingsGet('electronTTF.content.activeView', 'left'),
   left: {
     position: 0,
     items: [],
-    path: settings.get('electronTTF.content.left.path', os.homedir()),
-    sortType: settings.get(
+    path: settingsGet('electronTTF.content.left.path', os.homedir()),
+    sortType: settingsGet(
       'electronTTF.content.left.sortType',
       'FileAscDirFirst'
     ),
-    infoType: settings.get('electronTTF.content.left.infoType', 1),
+    infoType: settingsGet('electronTTF.content.left.infoType', 1),
     histories: [],
     isInvalidPath: false,
     needToRefresh: false,
@@ -37,12 +47,12 @@ const content: ContentStateType = {
   right: {
     position: 0,
     items: [],
-    path: settings.get('electronTTF.content.right.path', os.homedir()),
-    sortType: settings.get(
+    path: settingsGet('electronTTF.content.right.path', os.homedir()),
+    sortType: settingsGet(
       'electronTTF.content.right.sortType',
       'FileAscDirFirst'
     ),
-    infoType: settings.get('electronTTF.content.right.infoType', 1),
+    infoType: settingsGet('electronTTF.content.right.infoType', 1),
     histories: [],
     isInvalidPath: false,
     needToRefresh: false,
@@ -73,8 +83,10 @@ export function getInitialState() {
   let cliFlags;
   if (process.env.NODE_ENV === 'test') {
     cliFlags = {};
-  } else {
+  } else if (remote && typeof remote.getGlobal === 'function') {
     ({ cliFlags } = remote.getGlobal('sharedObject'));
+  } else {
+    cliFlags = {};
   }
   // console.log('cliFlags', cliFlags);
   if (cliFlags.L) {
@@ -99,9 +111,7 @@ const preferences = {
   showPathOnTitleBar: false,
   favoritePathList: [],
   textFileRegexp: DEFAULT_TEXT_FILE_PATTERN,
-  textEditor: posix
-    ? 'mousepad $P'
-    : 'notepad $P'
+  textEditor: posix ? 'mousepad $P' : 'notepad $P'
 };
 
 export function getInitialPreferences() {

@@ -8,7 +8,14 @@ import moment from 'moment';
 import is from 'electron-is';
 import type { ItemStateType } from '../utils/types';
 
-const posix = !is.windows() && process.env.NODE_ENV !== 'test' ? require('posix-ext') : null;
+let posix = null;
+if (!is.windows() && process.env.NODE_ENV !== 'test') {
+  try {
+    posix = require('posix-ext');
+  } catch (err) {
+    posix = null;
+  }
+}
 
 // ファイル名を本体と拡張子に分類
 export function extractBodyAndExt(fileName: string) {

@@ -1,6 +1,6 @@
 // @flow
-import settings from "electron-settings";
+import { settingsGet } from './settings';
 
 export default function getFindItemType() {
-  return settings.get('electronTTF.findItemType', 'PartialMatch');
+  return settingsGet('electronTTF.findItemType', 'PartialMatch');
 }

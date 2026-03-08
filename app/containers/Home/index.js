@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import fs from 'fs';
-import { ipcRenderer, clipboard, remote } from 'electron';
+import electron, { ipcRenderer, clipboard } from 'electron';
 import path from 'path';
 
 import styles from './Home.scss';
@@ -104,7 +104,8 @@ import { getActiveContent, getMaskInfo, getPathInfo } from '../../utils/util';
 
 const Mousetrap = require('mousetrap-pause')(require('mousetrap'));
 
-const { app } = remote;
+const remote = electron.remote || null;
+const app = remote && remote.app ? remote.app : null;
 
 type Props = {
   content: ContentStateType,
@@ -393,14 +394,22 @@ class Home extends Component<Props, State> {
 
   setTitle = props => {
     const { activeContent } = getActiveContent(props.content);
-    const win = remote.getCurrentWindow();
+    const win =
+      remote && typeof remote.getCurrentWindow === 'function'
+        ? remote.getCurrentWindow()
+        : null;
     const maskInfo = getMaskInfo(props.content.activeView, props.content);
     const pathInfo = getPathInfo(activeContent, maskInfo);
-    if (this.state.preferences.showPathOnTitleBar) {
-      win.setTitle(`${pathInfo} : ${getShortApplicationString()}`);
-    } else {
-      win.setTitle(getShortApplicationString());
+    const title = this.state.preferences.showPathOnTitleBar
+      ? `${pathInfo} : ${getShortApplicationString()}`
+      : getShortApplicationString();
+
+    if (win && typeof win.setTitle === 'function') {
+      win.setTitle(title);
+      return;
     }
+
+    document.title = title;
   };
 
   watchDirectory = viewPosition => {
@@ -1025,7 +1034,13 @@ class Home extends Component<Props, State> {
     if (combo === 'q') {
       savePreferences(content, this.state.preferences);
     }
-    app.quit();
+
+    if (app && typeof app.quit === 'function') {
+      app.quit();
+      return;
+    }
+
+    ipcRenderer.send('closed');
   };
 
   render() {

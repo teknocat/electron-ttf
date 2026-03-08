@@ -8,7 +8,14 @@ import type { ItemStateType } from '../../utils/types';
 
 import styles from './Dialog.scss';
 
-const posix = !is.windows() && process.env.NODE_ENV !== 'test' ? require('posix-ext') : null;
+let posix = null;
+if (!is.windows() && process.env.NODE_ENV !== 'test') {
+  try {
+    posix = require('posix-ext');
+  } catch (err) {
+    posix = null;
+  }
+}
 
 type Props = {
   activeView: string,

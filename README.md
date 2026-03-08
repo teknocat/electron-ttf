@@ -34,6 +34,29 @@ $ npm run dev
 
 あるいは、アーカイブを展開して実行ファイル(`ettf`/`Electron TTF.exe`)を起動。
 
+## 動作確認バージョン
+
+2026-03-08 時点で、以下のバージョン組み合わせで `npm install` / `npm run dev` / `npm run build-main` / `npm run build-renderer` を確認。
+
+- Node.js: `v24.14.0`
+- npm: `11.9.0`
+- Electron: `40.8.0` (`package.json` は `^40.8.0`)
+
+主要依存(参考):
+
+- webpack: `^4.29.0`
+- webpack-dev-server: `^3.1.4`
+- babel-core: `^6.26.3`
+- sass: `^1.32.13`
+- sass-loader: `^10.4.1`
+- react: `^16.4.2`
+- react-dom: `16.4.2`
+
+補足:
+
+- lockfile は root / app ともに `lockfileVersion: 3`。
+- Node 24 環境では webpack 4 互換のため `NODE_OPTIONS=--openssl-legacy-provider` を build/dev の Node 側工程で適用。
+
 ## 実装済機能
 
 ### キー操作

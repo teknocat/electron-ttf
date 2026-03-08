@@ -41,8 +41,39 @@ import {
   CHANGE_VIRTUAL_FOLDER
 } from '../utils/types';
 import { extractBodyAndExt, convertPath, anotherSideView } from '../utils/file';
-import {getActiveContent, regexFindIndex} from '../utils/util';
+import { getActiveContent, regexFindIndex } from '../utils/util';
 import getFindItemType from '../utils/preference';
+
+function openWithDefaultApp(targetPath: string, dispatch: Function) {
+  const shellAny: any = shell;
+
+  // shell.openItem is deprecated/removed on newer Electron versions.
+  if (typeof shellAny.openPath === 'function') {
+    shellAny
+      .openPath(targetPath)
+      .then(errorMessage => {
+        if (errorMessage) {
+          console.error('Failed to open path:', targetPath, errorMessage);
+          dispatch(addLogMessage(`Failed to open: ${targetPath}`));
+          return null;
+        }
+        return null;
+      })
+      .catch(err => {
+        console.error('Failed to open path:', targetPath, err);
+        dispatch(addLogMessage(`Failed to open: ${targetPath}`));
+      });
+    return;
+  }
+
+  if (typeof shellAny.openItem === 'function') {
+    shellAny.openItem(targetPath);
+    return;
+  }
+
+  console.error('No supported shell open API found.');
+  dispatch(addLogMessage(`Failed to open: ${targetPath}`));
+}
 
 export function switchActiveView() {
   return {
@@ -96,9 +127,7 @@ export function moveCursorToBottom() {
   return (dispatch: (action: ActionType) => void, getState: Function) => {
     const { content }: { content: ContentStateType } = getState();
     const { activeView, activeContent } = getActiveContent(content);
-    dispatch(
-      moveCursorAction(activeView, activeContent.items.length - 1)
-    );
+    dispatch(moveCursorAction(activeView, activeContent.items.length - 1));
   };
 }
 function moveCursorAction(viewPosition, currentPosition) {
@@ -303,9 +332,9 @@ export function fetchItems(
     // const files = fs.readdirSync(targetDir);
     // TODO ディレクトリは無視してglobが動作するように
     // TODO 複数パターン対応
-    const files = glob.sync(
-      targetContent.maskPattern, {dot: true, cwd: targetDir}
-    ).map(f => f.split('/').pop());
+    const files = glob
+      .sync(targetContent.maskPattern, { dot: true, cwd: targetDir })
+      .map(f => f.split('/').pop());
     // console.log('files', files);
 
     // ルートディレクトリでなければ上位ディレクトリを追加
@@ -487,7 +516,7 @@ function changeVirtualFolderAndFetch(
       return;
     }
     targetPath = currentVFEntry.parent;
-    console.log("target path:", targetPath);
+    console.log('target path:', targetPath);
     if (targetPath === '') {
       targetVFEntry = null;
     } else {
@@ -496,8 +525,9 @@ function changeVirtualFolderAndFetch(
       const entry = pathParts.slice(-1)[0];
       console.log('parent:', parent);
       console.log('entry:', entry);
-      targetVFEntry = activeContent.virtualFolderEntries
-        .find(x => x.parent === parent && x.entry === entry);
+      targetVFEntry = activeContent.virtualFolderEntries.find(
+        x => x.parent === parent && x.entry === entry
+      );
     }
   } else {
     if (currentVFEntry == null) {
@@ -505,11 +535,12 @@ function changeVirtualFolderAndFetch(
     } else {
       targetPath = `${currentPath}/${item.fileName}`;
     }
-    console.log("target path:", targetPath);
-    targetVFEntry = activeContent.virtualFolderEntries
-      .find(x => x.parent === currentPath && x.entry === item.fileName);
+    console.log('target path:', targetPath);
+    targetVFEntry = activeContent.virtualFolderEntries.find(
+      x => x.parent === currentPath && x.entry === item.fileName
+    );
   }
-  console.log("targetVFEntry:", targetVFEntry);
+  console.log('targetVFEntry:', targetVFEntry);
 
   // ディレクトリならディレクトリ内のリストを取得
   if (targetVFEntry == null || targetVFEntry.isDirectory) {
@@ -537,12 +568,12 @@ function changeVirtualFolderAndFetch(
           stats: {
             vf: {
               fileDate: x.zipEntry.header.time,
-              fileSize: x.zipEntry.header.size,
-            },
+              fileSize: x.zipEntry.header.size
+            }
           },
           marked: false,
           isDirectory: x.isDirectory,
-          isSymbolicLink: false,
+          isSymbolicLink: false
         });
       }
     });
@@ -585,8 +616,7 @@ export function execEnter(
     }
 
     const item = activeContent.items[cursorPosition];
-    const currentPath =
-      convertPath(activeContent.path) || activeContent.path;
+    const currentPath = convertPath(activeContent.path) || activeContent.path;
     // parentAsCurrent が有効なら .. はカレントディレクトリとして扱う
     const targetPath = path.join(
       currentPath,
@@ -604,7 +634,7 @@ export function execEnter(
     if (!stats) return;
 
     if (withCtrl) {
-      shell.openItem(targetPath);
+      openWithDefaultApp(targetPath, dispatch);
       dispatch(moveCursorDown());
       return;
     }
@@ -624,13 +654,14 @@ export function execEnter(
     // 内部ビューア処理
 
     // ファイルがテキストと判断されるものであれば、内部テキストビューアを起動
-    const {textFileRegexp} = preferences;
+    const { textFileRegexp } = preferences;
     // console.log('textFileRegexp', textFileRegexp);
     if (textFileRegexp) {
       // $FlowFixMe
       const regexp = new RegExp(String.raw`${textFileRegexp}`, 'i');
       // console.log('regexp', regexp);
-      if (regexp.test(item.fileName)) { // eslint-disable-line no-lonely-if
+      if (regexp.test(item.fileName)) {
+        // eslint-disable-line no-lonely-if
         console.log('assumed to text file:', targetPath);
         dispatch(switchToTextViewAction(item));
         dispatch(moveCursorDown());
@@ -653,13 +684,13 @@ export function execEnter(
         const zip = new AdmZip(targetPath);
         const items: Array<ItemStateType> = [];
         const vfEntries: Array<VirtualFolderEntryType> = [];
-        zip.getEntries().forEach((zipEntry) => {
+        zip.getEntries().forEach(zipEntry => {
           // console.log('zipEntry.toString()', zipEntry.toString());
           console.log('zipEntry.header', zipEntry.header);
           const pathParts = zipEntry.entryName.split('/');
           let parent = '';
           let entry;
-          const {isDirectory} = zipEntry;
+          const { isDirectory } = zipEntry;
           if (isDirectory) {
             if (pathParts.length > 2) {
               parent = pathParts.slice(0, pathParts.length - 2).join('/');
@@ -689,26 +720,19 @@ export function execEnter(
               stats: {
                 vf: {
                   fileDate: zipEntry.header.time,
-                  fileSize: zipEntry.header.size,
-                },
+                  fileSize: zipEntry.header.size
+                }
               },
               marked: false,
               isDirectory: vfEntry.isDirectory,
-              isSymbolicLink: false,
+              isSymbolicLink: false
             });
           }
         });
         // TODO 仮想フォルダ内パス表示
         // TODO 仮想フォルダ構造をオブジェクト化して content に持たせる
         dispatch(
-          changeVirtualFolder(
-            item,
-            vfEntries,
-            viewPosition,
-            '',
-            0,
-            null
-          )
+          changeVirtualFolder(item, vfEntries, viewPosition, '', 0, null)
         );
         dispatch(retrieveFileList(viewPosition, items, 0, false));
       } catch (e) {
@@ -816,8 +840,7 @@ export function changeDirectoryToParent() {
       return;
     }
 
-    const currentPath =
-      convertPath(activeContent.path) || activeContent.path;
+    const currentPath = convertPath(activeContent.path) || activeContent.path;
     const targetPath = path.join(currentPath, '..');
     // 履歴から探して見つかれば、そこのlastPositionをセット
     const entry: ?HistoryStateType = activeContent.histories.find(
@@ -838,8 +861,7 @@ export function changeDirectoryToHome() {
   return (dispatch: (action: ActionType) => void, getState: Function) => {
     const { content } = getState();
     const { activeView, activeContent } = getActiveContent(content);
-    const currentPath =
-      convertPath(activeContent.path) || activeContent.path;
+    const currentPath = convertPath(activeContent.path) || activeContent.path;
     const targetPath = os.homedir();
     changeDirectoryAndFetch(
       targetPath,
@@ -856,8 +878,7 @@ export function changeDirectoryToRoot() {
   return (dispatch: (action: ActionType) => void, getState: Function) => {
     const { content } = getState();
     const { activeView, activeContent } = getActiveContent(content);
-    const currentPath =
-      convertPath(activeContent.path) || activeContent.path;
+    const currentPath = convertPath(activeContent.path) || activeContent.path;
     try {
       const { root } = path.parse(currentPath);
       changeDirectoryAndFetch(
@@ -1007,9 +1028,7 @@ function rangeMarkItemAction(
 // カーソル位置より上（もしくは下）にある最も近いマーク位置からカーソル位置までの一括マーク機能
 // 上（もしくは下）にマークされたアイテムがなければ何もしない
 // カーソル位置がマーク済の場合は何もしない
-export function rangeMarkItem(
-  towardAbove: boolean = false
-) {
+export function rangeMarkItem(towardAbove: boolean = false) {
   return (dispatch: (action: ActionType) => void, getState: Function) => {
     const { content } = getState();
     const { activeView, activeContent } = getActiveContent(content);
@@ -1023,13 +1042,11 @@ export function rangeMarkItem(
     if (towardAbove) {
       // カーソルの上にある最も近いマークを探す
       let nearestIndex = -1;
-      activeContent.items
-        .slice(0, cursorPosition)
-        .forEach((item, index) => {
-          if (item.marked) {
-            nearestIndex = index;
-          }
-        });
+      activeContent.items.slice(0, cursorPosition).forEach((item, index) => {
+        if (item.marked) {
+          nearestIndex = index;
+        }
+      });
       // console.log('nearestIndex:', nearestIndex);
       if (nearestIndex < 0) {
         return;
@@ -1195,7 +1212,9 @@ export function launchTerminal(
         dispatch(moveCursorDown());
       } catch (err) {
         console.log(err);
-        dispatch(addLogMessage(`Can't launch terminal: ${commandLine} : ${targetPath}`));
+        dispatch(
+          addLogMessage(`Can't launch terminal: ${commandLine} : ${targetPath}`)
+        );
       }
     }
   };
@@ -1220,9 +1239,7 @@ export function setFileMask(viewPosition: string, maskPattern: string) {
   };
 }
 
-export function launchTextEditor(
-  commandLine?: string
-) {
+export function launchTextEditor(commandLine?: string) {
   return (dispatch: Function, getState: Function) => {
     if (!commandLine) return;
     // console.log("commandLine=", commandLine);
@@ -1247,7 +1264,11 @@ export function launchTextEditor(
         exec(commandLine.replace('$P', targetPath), { cwd: currentDir });
       } catch (err) {
         console.log(err);
-        dispatch(addLogMessage(`Can't launch text editor: ${commandLine} : ${targetPath}`));
+        dispatch(
+          addLogMessage(
+            `Can't launch text editor: ${commandLine} : ${targetPath}`
+          )
+        );
       }
     }
   };

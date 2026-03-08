@@ -8,6 +8,7 @@ import ExtractTextPlugin from 'extract-text-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import merge from 'webpack-merge';
 import UglifyJSPlugin from 'uglifyjs-webpack-plugin';
+import sass from 'sass';
 import baseConfig from './webpack.config.base';
 import CheckNodeEnv from './internals/scripts/CheckNodeEnv';
 
@@ -71,7 +72,10 @@ export default merge.smart(baseConfig, {
               }
             },
             {
-              loader: 'sass-loader'
+              loader: 'sass-loader',
+              options: {
+                implementation: sass
+              }
             }
           ],
           fallback: 'style-loader'
@@ -92,7 +96,10 @@ export default merge.smart(baseConfig, {
               }
             },
             {
-              loader: 'sass-loader'
+              loader: 'sass-loader',
+              options: {
+                implementation: sass
+              }
             }
           ]
         })
