@@ -104,7 +104,13 @@ app.on('ready', async () => {
   mainWindow = new BrowserWindow({
     show: false,
     width: 1024,
-    height: 728
+    height: 728,
+    webPreferences: {
+      // Keep legacy renderer assumptions during migration steps.
+      nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true
+    }
   });
 
   splash = new BrowserWindow({

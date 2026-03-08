@@ -1,4 +1,4 @@
-import { remote } from 'electron';
+import * as electron from 'electron';
 import settings from 'electron-settings';
 import os from 'os';
 import is from 'electron-is';
@@ -14,6 +14,8 @@ if (!is.windows() && process.env.NODE_ENV !== 'test') {
     posix = null;
   }
 }
+
+const remote = electron.remote || null;
 
 // reducersのテストを通すためには独自ファイルを指定する必要がある
 if (process.env.NODE_ENV === 'test') {
@@ -80,8 +82,10 @@ export function getInitialState() {
   let cliFlags;
   if (process.env.NODE_ENV === 'test') {
     cliFlags = {};
-  } else {
+  } else if (remote && typeof remote.getGlobal === 'function') {
     ({ cliFlags } = remote.getGlobal('sharedObject'));
+  } else {
+    cliFlags = {};
   }
   // console.log('cliFlags', cliFlags);
   if (cliFlags.L) {
