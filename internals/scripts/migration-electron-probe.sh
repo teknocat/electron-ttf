@@ -76,7 +76,7 @@ for combo in "${COMBOS[@]}"; do
       # Re-apply requested Electron version because npm install above can resolve back to package.json range.
       npm install --no-save --ignore-scripts electron@${ELECTRON_VERSION} >/dev/null; \
       node ./node_modules/electron/install.js >/dev/null; \
-      if [ ${NODE_VERSION%%.*} -ge 18 ]; then export NODE_OPTIONS=--openssl-legacy-provider; fi; \
+      if [ ${NODE_VERSION%%.*} -ge 18 ]; then export NODE_OPTIONS=--openssl-legacy-provider; else unset NODE_OPTIONS || true; fi; \
       node -e \"console.log('node=', process.version); console.log('electron=', require('./node_modules/electron/package.json').version);\"; \
       NODE_ENV=production node --trace-warnings -r babel-register ./node_modules/webpack/bin/webpack --config webpack.config.main.prod.js --colors >/tmp/build-main.log 2>&1; \
       set +e; \
@@ -84,7 +84,7 @@ for combo in "${COMBOS[@]}"; do
         NODE_ENV=development node --trace-warnings -r babel-register ./node_modules/webpack-dev-server/bin/webpack-dev-server --config webpack.config.renderer.dev.js > /tmp/renderer.log 2>&1 & \
         renderer_pid=\$!; \
         sleep 12; \
-        HOT=1 NODE_ENV=development SKIP_DEVTOOLS_EXTENSIONS=1 ELECTRON_DISABLE_SANDBOX=1 ./node_modules/.bin/electron -r babel-register ./app/main.dev.js > /tmp/main.log 2>&1 & \
+        NODE_OPTIONS= HOT=1 NODE_ENV=development SKIP_DEVTOOLS_EXTENSIONS=1 ELECTRON_DISABLE_SANDBOX=1 ./node_modules/.bin/electron -r babel-register ./app/main.dev.js > /tmp/main.log 2>&1 & \
         main_pid=\$!; \
         sleep 25; \
         alive=0; \

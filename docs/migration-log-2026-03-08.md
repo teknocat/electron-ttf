@@ -161,3 +161,21 @@
 - `npm install --ignore-scripts` を使う構成では `electron` バイナリが未取得になるため、
   `node ./node_modules/electron/install.js` を起動前に明示実行するよう修正。
 - 修正後、`start-renderer-dev` と `start-main-dev` の両方が起動することを確認。
+
+## Node 18 + Electron 28 再検証 (2026-03-08)
+
+実行:
+- `bash internals/scripts/migration-electron-probe.sh 18.20.4:28.3.3`
+
+結果:
+- PASS
+- ログ: `.artifacts/migration/node-18.20.4-electron-28.3.3.log`
+
+対応メモ:
+- Node 18 系では OpenSSL 3 対応のため、ビルド/開発サーバー工程に
+  `NODE_OPTIONS=--openssl-legacy-provider` を適用。
+- 一方で Electron 28 実行時は同オプションを許容しないため、
+  Electron 起動コマンドのみ `NODE_OPTIONS` を空で実行するよう
+  `migration-electron-probe.sh` を修正。
+- 修正後、`build-main` / `renderer` / `main` の全工程が通過し
+  `alive=2` を確認。
