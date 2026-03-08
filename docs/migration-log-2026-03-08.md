@@ -148,3 +148,16 @@
 - `sass` 対応は維持し、実行基盤を先に Node 12+ へ引き上げる。
 - Node 10 レーンは後方互換の参考として凍結し、`sass` を動かすための追加対応は行わない。
 - Docker GUI 開発スクリプト (`docker-dev-wslg.sh`) は Node `12.22.12` を既定値とする。
+
+## Docker GUI 起動確認 (2026-03-08)
+
+実行:
+- `bash internals/scripts/docker-dev-wslg.sh`
+
+結果:
+- PASS (Exit 0)
+
+対応メモ:
+- `npm install --ignore-scripts` を使う構成では `electron` バイナリが未取得になるため、
+  `node ./node_modules/electron/install.js` を起動前に明示実行するよう修正。
+- 修正後、`start-renderer-dev` と `start-main-dev` の両方が起動することを確認。
