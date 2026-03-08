@@ -403,3 +403,24 @@
 - `PROBE_INITIAL_SCREEN_OK {"leftPath":"/root","rightPath":"/root","leftItems":9,"rightItems":9}`
   を確認。
 - Node 24 でも「dev server 起動 + 初期2ペインホーム一覧描画」まで成立。
+
+## ホスト Node 24 再整備 (2026-03-08)
+
+背景:
+- 直前コミットをいったん revert したうえで、Node 24 ホスト実行で実際に失敗していた箇所を再修正。
+
+対応:
+- `package.json`
+  - `electron` を `^40.8.0` に更新。
+  - `start-main-dev` を `electron ./app` 起動へ変更し、`NODE_OPTIONS` をクリア。
+  - `start-renderer-dev` に `NODE_OPTIONS=--openssl-legacy-provider` を付与。
+  - `postinstall` 末尾の `check-dev-engines.js` 呼び出しを削除。
+  - `devEngines` を `engines` へ変更。
+- `internals/scripts/CheckNativeDep.js`
+  - root `node_modules` に native module が0件の場合はチェックをスキップするガードを追加。
+    - npm 10/11 環境で `npm ls` が全依存を返し、誤検知で失敗する問題を回避。
+
+確認:
+- Node `24.14.0` / npm `11.9.0` で `npm install` 実行: `EXIT_CODE=0`。
+  - `install-app-deps` 内 `posix` 再ビルド失敗は許容済み WARN として継続。
+- Node `24.14.0` / Electron `40.8.0` で `npm run dev` 実行: `EXIT_CODE=0`。
