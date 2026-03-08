@@ -4,7 +4,6 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import fs from 'fs';
 import electron, { ipcRenderer, clipboard } from 'electron';
-import os from 'os';
 import path from 'path';
 
 import styles from './Home.scss';
@@ -345,7 +344,6 @@ class Home extends Component<Props, State> {
 
     this.showReady();
     ipcRenderer.send('app-ready');
-    this.reportProbeInitialScreenIfReady();
 
     // XXX for test
     // this.spinner.show();
@@ -392,47 +390,7 @@ class Home extends Component<Props, State> {
     }
 
     this.setTitle(this.props);
-    this.reportProbeInitialScreenIfReady();
   }
-
-  probeInitialScreenReported: boolean = false;
-
-  reportProbeInitialScreenIfReady = () => {
-    if (this.probeInitialScreenReported) return;
-    if (process.env.MIGRATION_PROBE !== '1') return;
-
-    const { content } = this.props;
-    if (!content || content.viewMode !== 'DIRECTORY') return;
-    if (!content.left || !content.right) return;
-
-    const leftItems = content.left.items || [];
-    const rightItems = content.right.items || [];
-    const leftPane = document.getElementById('content_left');
-    const rightPane = document.getElementById('content_right');
-    const leftFirstItem = document.getElementById('item_left_0');
-    const rightFirstItem = document.getElementById('item_right_0');
-    const homeDir = os.homedir();
-
-    const isReady =
-      !!leftPane &&
-      !!rightPane &&
-      !!leftFirstItem &&
-      !!rightFirstItem &&
-      leftItems.length > 0 &&
-      rightItems.length > 0 &&
-      content.left.path === homeDir &&
-      content.right.path === homeDir;
-
-    if (!isReady) return;
-
-    this.probeInitialScreenReported = true;
-    ipcRenderer.send('probe-initial-screen-ok', {
-      leftPath: content.left.path,
-      rightPath: content.right.path,
-      leftItems: leftItems.length,
-      rightItems: rightItems.length
-    });
-  };
 
   setTitle = props => {
     const { activeContent } = getActiveContent(props.content);

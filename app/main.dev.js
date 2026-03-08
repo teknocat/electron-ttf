@@ -174,9 +174,3 @@ ipcMain.on('closed', () => {
 ipcMain.on('app-ready', () => {
   splash.destroy();
 });
-
-ipcMain.on('probe-initial-screen-ok', (event, payload) => {
-  if (process.env.MIGRATION_PROBE === '1') {
-    console.log(`PROBE_INITIAL_SCREEN_OK ${JSON.stringify(payload)}`);
-  }
-});
