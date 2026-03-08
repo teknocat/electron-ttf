@@ -98,3 +98,53 @@
 - [ ] Electron メジャーバージョンを段階的に更新し、各段階でスモークテスト実施。
 - [ ] webpack/babel ツールチェーンをサポート対象へ更新。
 - [ ] Linux/Windows 向けパッケージング確認を追加。
+
+## Electron マトリクス検証メモ (2026-03-08 追記)
+
+実行スクリプト:
+- `bash internals/scripts/migration-electron-probe.sh <node>:<electron>`
+
+### 12.22.12 + 9.4.4
+
+結果:
+- PASS
+- ログ: `.artifacts/migration/node-12.22.12-electron-9.4.4.log`
+
+補足:
+- `migration-electron-probe.sh` のクォート不備を修正し、`set -u` での誤展開を解消。
+- 残留プロセス (`xvfb-run` / `webpack-dev-server` / `electron`) の強制終了を強化し、ハング待ちを抑制。
+
+### 16.20.2 + 15.5.7
+
+結果:
+- FAIL
+- ログ: `.artifacts/migration/node-16.20.2-electron-15.5.7.log`
+
+失敗内容(主要):
+- renderer の SCSS ビルドで `sass-loader` と `node-sass` の互換制約に到達。
+- `node-sass` を Node 16 互換版に上げると、今度は既存 `sass-loader` 側が `^4.0.0` を要求して失敗。
+
+所見:
+- Node 16/Electron 15 へ進むには、`node-sass` だけの差し替えでは不十分。
+- 次の本対応は `sass-loader + sass` への移行 (webpack 設定と依存の同時更新) が必要。
+
+## 検証再開メモ (2026-03-08 再起動後)
+
+再開時の対応:
+- `migration-electron-probe.sh` を再確認し、Node 16/18 分岐で `sass/sass-loader` を入れた後に
+  `electron` が `package.json` の範囲 (`^2.0.11`) に巻き戻る問題を修正。
+- 対応として、依存調整の最後に `npm install --no-save --ignore-scripts electron@${ELECTRON_VERSION}` を再適用するよう更新。
+
+再実行結果:
+- `12.22.12 + 9.4.4`: PASS (再確認)
+- `16.20.2 + 15.5.7`: FAIL (再現)
+
+`16.20.2 + 15.5.7` の失敗要因(再確認):
+- renderer の SCSS ビルドで `node-sass@4.14.1` バイナリ非対応 (`Unsupported runtime (93)`)。
+- Electron 15 での実動検証に進む前に、SCSS 周りを `sass` 系へ移行する必要がある。
+
+## 運用方針 (2026-03-08)
+
+- `sass` 対応は維持し、実行基盤を先に Node 12+ へ引き上げる。
+- Node 10 レーンは後方互換の参考として凍結し、`sass` を動かすための追加対応は行わない。
+- Docker GUI 開発スクリプト (`docker-dev-wslg.sh`) は Node `12.22.12` を既定値とする。

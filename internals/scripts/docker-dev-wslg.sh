@@ -27,8 +27,8 @@ sudo docker run --rm --platform=linux/amd64 --name electron-ttf-gui \
     export PROFILE=/dev/null; \
     curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash >/dev/null; \
     . /root/.nvm/nvm.sh; \
-    nvm install 10.24.1 >/dev/null; \
-    nvm use 10.24.1 >/dev/null; \
+    nvm install 12.22.12 >/dev/null; \
+    nvm use 12.22.12 >/dev/null; \
     cd /work; \
     npm config set python /usr/bin/python2 >/dev/null; \
     npm install --ignore-scripts >/dev/null; \
