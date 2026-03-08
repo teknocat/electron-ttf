@@ -53,3 +53,6 @@ npm-debug.log.*
 
 # Local migration artifacts
 .artifacts/
+
+# Environment-local runtime pinning
+.nvmrc
