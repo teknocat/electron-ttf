@@ -32,4 +32,5 @@ sudo docker run --rm --platform=linux/amd64 --name electron-ttf-gui \
     cd /work; \
     npm config set python /usr/bin/python2 >/dev/null; \
     npm install --ignore-scripts >/dev/null; \
+    node ./node_modules/electron/install.js >/dev/null; \
     npm run dev'
