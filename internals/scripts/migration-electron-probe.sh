@@ -89,7 +89,7 @@ for combo in "${COMBOS[@]}"; do
         NODE_ENV=development node --trace-warnings -r babel-register ./node_modules/webpack-dev-server/bin/webpack-dev-server --config webpack.config.renderer.dev.js > /tmp/renderer.log 2>&1 & \
         renderer_pid=\$!; \
         sleep 12; \
-        NODE_OPTIONS= HOT=1 NODE_ENV=development MIGRATION_PROBE=1 SKIP_DEVTOOLS_EXTENSIONS=1 ELECTRON_DISABLE_SANDBOX=1 ./node_modules/.bin/electron -r babel-register ./app/main.dev.js > /tmp/main.log 2>&1 & \
+        NODE_OPTIONS= HOT=1 NODE_ENV=development MIGRATION_PROBE=1 SKIP_DEVTOOLS_EXTENSIONS=1 ELECTRON_DISABLE_SANDBOX=1 ./node_modules/.bin/electron ./app > /tmp/main.log 2>&1 & \
         main_pid=\$!; \
         sleep 25; \
         alive=0; \

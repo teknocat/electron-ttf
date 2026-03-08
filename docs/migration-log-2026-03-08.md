@@ -291,3 +291,29 @@
   `PROBE_INITIAL_SCREEN_OK {"leftPath":"/root","rightPath":"/root","leftItems":9,"rightItems":9}`
   を確認。
 - つまり「dev server 起動 + ウィンドウ表示 + 初期2ペインホーム一覧描画」まで成立。
+
+### 22.11.0 + 36.0.0
+
+実行:
+- `bash internals/scripts/migration-electron-probe.sh 22.11.0:36.0.0`
+
+初回結果:
+- FAIL
+
+初回失敗内容(致命):
+- Electron 36 で `electron -r babel-register ./app/main.dev.js` 起動時に
+  `main.dev.js` が ESM として扱われ、`ReferenceError: require is not defined in ES module scope` でクラッシュ。
+
+対応:
+- `migration-electron-probe.sh` の main 起動を
+  `./node_modules/.bin/electron ./app` に変更。
+  - `build-main` で生成済みの `app/main.prod.js` (CJS bundle) を `app/package.json` の `main` 経由で起動。
+
+再実行結果:
+- PASS
+- ログ: `.artifacts/migration/node-22.11.0-electron-36.0.0.log`
+
+確認ポイント:
+- `alive=2` に加え、`PROBE_INITIAL_SCREEN_OK {"leftPath":"/root","rightPath":"/root","leftItems":9,"rightItems":9}`
+  を確認。
+- つまり Electron 36 でも「dev server 起動 + 初期2ペインホーム一覧描画」まで成立。
