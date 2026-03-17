@@ -321,7 +321,7 @@ class Home extends Component<Props, State> {
       this.execKeyAction
     );
 
-    Mousetrap.bind('q', this.quitApplication);
+    Mousetrap.bind('q', this.hideOrQuitApplication);
     Mousetrap.bind('Q', this.quitApplication);
 
     // 101キーモードかどうかでキーバインドが変わるもの
@@ -1028,15 +1028,20 @@ class Home extends Component<Props, State> {
     this.logView.addMessage('Ready.');
   };
 
-  quitApplication = (e, combo) => {
+  hideOrQuitApplication = () => {
     const { content } = this.props;
     savePreferences(content, this.state.preferences);
 
-    if (combo === 'q' && process.platform === 'darwin') {
+    if (process.platform === 'darwin') {
       ipcRenderer.send('app-hide');
-      return;
+    } else {
+      ipcRenderer.send('app-quit');
     }
+  };
 
+  quitApplication = () => {
+    const { content } = this.props;
+    savePreferences(content, this.state.preferences);
     ipcRenderer.send('app-quit');
   };
 
