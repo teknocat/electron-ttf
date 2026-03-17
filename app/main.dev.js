@@ -169,8 +169,14 @@ app.on('activate', () => {
 });
 
 ipcMain.on('closed', () => {
-  mainWindow = null;
-  app.quit();
+  if (process.platform === 'darwin') {
+    if (mainWindow) {
+      mainWindow.hide();
+    }
+  } else {
+    mainWindow = null;
+    app.quit();
+  }
 });
 
 ipcMain.on('app-quit', () => {
