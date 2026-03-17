@@ -162,12 +162,31 @@ app.on('ready', async () => {
   // menuBuilder.buildMenu();
 });
 
+app.on('activate', () => {
+  if (mainWindow) {
+    mainWindow.show();
+  }
+});
+
 ipcMain.on('closed', () => {
-  mainWindow = null;
-  // Respect the OSX convention of having the application in memory even
-  // after all windows have been closed
-  if (process.platform !== 'darwin') {
+  if (process.platform === 'darwin') {
+    if (mainWindow) {
+      mainWindow.hide();
+    }
+  } else {
+    mainWindow = null;
     app.quit();
+  }
+});
+
+ipcMain.on('app-quit', () => {
+  mainWindow = null;
+  app.quit();
+});
+
+ipcMain.on('app-hide', () => {
+  if (mainWindow) {
+    mainWindow.hide();
   }
 });
 
