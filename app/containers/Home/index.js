@@ -105,7 +105,6 @@ import { getActiveContent, getMaskInfo, getPathInfo } from '../../utils/util';
 const Mousetrap = require('mousetrap-pause')(require('mousetrap'));
 
 const remote = electron.remote || null;
-const app = remote && remote.app ? remote.app : null;
 
 type Props = {
   content: ContentStateType,
@@ -1031,16 +1030,14 @@ class Home extends Component<Props, State> {
 
   quitApplication = (e, combo) => {
     const { content } = this.props;
-    if (combo === 'q') {
-      savePreferences(content, this.state.preferences);
-    }
+    savePreferences(content, this.state.preferences);
 
-    if (app && typeof app.quit === 'function') {
-      app.quit();
+    if (combo === 'q' && process.platform === 'darwin') {
+      ipcRenderer.send('app-hide');
       return;
     }
 
-    ipcRenderer.send('closed');
+    ipcRenderer.send('app-quit');
   };
 
   render() {
